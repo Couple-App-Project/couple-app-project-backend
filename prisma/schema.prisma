@@ -13,14 +13,15 @@ datasource db {
 model User {
   id              Int         @default(autoincrement()) @id
   email           String      @unique
-  name            String?
+  name            String
   password        String
   birthDay        DateTime
-  refreshToken    String
-  inviteCode      String
+  gender          String
+  refreshToken    String?
+  inviteCode      String?
   calendars       Calendar[]
   couple          Couple?     @relation(fields: [coupleId], references: [id])
-  coupleId        Int? 
+  coupleId        Int?
 }
 
 model Couple {
