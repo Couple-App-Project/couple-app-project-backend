@@ -10,12 +10,14 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { ApiOperation } from '@nestjs/swagger';
 
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   @Post()
+  @ApiOperation({ summary: '회원가입' })
   create(@Body() createUserDto: CreateUserDto) {
     // TODO: password에 bcrypt 등 적용
     return this.usersService.create(createUserDto);
