@@ -7,6 +7,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) {}
 
+  async isExistEmail(email: string) {
+    const existEmail = await this.prisma.user.findFirst({ where: { email } });
+    return existEmail ? true : false;
+  }
+
   create(createUserDto: CreateUserDto) {
     console.log(createUserDto.birthDay);
     return this.prisma.user.create({
