@@ -4,7 +4,7 @@ import { ConflictException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
-import { RandomGenerator } from 'src/util/create-random-password';
+import { RandomGenerator } from 'src/util/generator/create-random-password';
 
 @Injectable()
 export class AuthService {
