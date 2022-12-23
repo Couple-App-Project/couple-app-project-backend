@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { RandomGenerator } from '../util/create-random-password';
 
 @Injectable()
 export class UsersService {
@@ -12,8 +13,20 @@ export class UsersService {
     return existEmail ? true : false;
   }
 
-  create(createUserDto: CreateUserDto) {
-    console.log(createUserDto.birthDay);
+  async create(createUserDto: CreateUserDto) {
+    let inviteCode;
+
+    // 중복되는 코드가 있을 경우를 방지
+    while (true) {
+      inviteCode = RandomGenerator.createRandomString(6);
+      const duplicatedCode = await this.prisma.user.findFirst({
+        where: { inviteCode },
+      });
+      if (!duplicatedCode) {
+        break;
+      }
+    }
+
     return this.prisma.user.create({
       data: {
         email: createUserDto.email,
@@ -21,6 +34,7 @@ export class UsersService {
         password: createUserDto.password,
         birthDay: new Date(createUserDto.birthDay),
         gender: createUserDto.gender,
+        inviteCode: inviteCode,
       },
     });
   }
