@@ -1,13 +1,13 @@
 import { ApiProperty } from '@nestjs/swagger';
 
 export class CreateUserDto {
-  @ApiProperty()
+  @ApiProperty({ example: 'kjng5901@gmail.com' })
   email: string;
 
-  @ApiProperty({ example: 'Admin' })
+  @ApiProperty({ example: '김정호' })
   name: string;
 
-  @ApiProperty()
+  @ApiProperty({ example: '5901' })
   password: string;
 
   // TODO: 올바른 형식의 날짜만 들어올 수 있도록

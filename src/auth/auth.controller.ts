@@ -25,8 +25,8 @@ export class AuthController {
   @ApiOperation({ summary: '토큰 테스트' })
   @Get('profile')
   @ApiBearerAuth()
-  getProfile() {
-    return '유효한 토큰! 로그인되어 있음.';
+  getProfile(@Req() req) {
+    return `유효한 토큰! 로그인되어 있음. userId: ${req.user.userId}, userName: ${req.user.userName}`;
   }
 
   @Post('email')
