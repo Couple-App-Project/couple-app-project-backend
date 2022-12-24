@@ -24,7 +24,7 @@ model User {
 
 model Couple {
   id            Int         @id @default(autoincrement())
-  anniversary   DateTime?
+  anniversary   String?
   specialPlace  String?
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
