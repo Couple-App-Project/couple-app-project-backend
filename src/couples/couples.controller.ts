@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -8,6 +8,8 @@ import { AddCoupleInformationDto } from './dto/add-couple-information.dto';
 @Controller('couples')
 export class CouplesController {
   constructor(private prisma: PrismaService) {}
+  // TODO: 나와 상대방의 정보를 constructor에서 미리 정의하기.
+
   @Post()
   @ApiOperation({ summary: '커플 연결' })
   @UseGuards(JwtAuthGuard)
@@ -97,5 +99,47 @@ export class CouplesController {
     });
 
     return { message: '커플 정보 입력 및 수정 완료' };
+  }
+
+  @Get('info')
+  @ApiOperation({ summary: '커플 정보 조회' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getCoupleInformation(@Req() req) {
+    // 커플 아이디 파악
+    const me = await this.prisma.user.findFirst({
+      where: {
+        id: req.user.userId,
+      },
+    });
+
+    // 상대방 파악
+    const meAndOpponent = await this.prisma.user.findMany({
+      where: {
+        coupleId: me.coupleId,
+      },
+    });
+    const opponent = meAndOpponent.filter(
+      (value) => value.id !== req.user.userId,
+    )[0];
+
+    // 나와 상대방의 닉네임을 추출 (없을 경우 이름)
+    const myNickname = me.nickname || me.name;
+    const yourNickname = opponent.nickname || opponent.name;
+
+    // coupleInformation 추출
+    const { createdAt, updatedAt, id, ...coupleInformation } =
+      await this.prisma.couple.findUnique({
+        where: {
+          id: me.coupleId,
+        },
+      });
+
+    // 묶어서 return
+    return {
+      myNickname,
+      yourNickname,
+      ...coupleInformation,
+    };
   }
 }
