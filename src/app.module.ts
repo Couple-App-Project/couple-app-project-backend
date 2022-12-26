@@ -8,6 +8,7 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { LoggerMiddleware } from './middleware/logger/http-logger.middleware';
 import { validate } from './util/validator/env.validation';
+import { CouplesController } from './couples/couples.controller';
 
 @Module({
   imports: [
@@ -21,7 +22,7 @@ import { validate } from './util/validator/env.validation';
     AuthModule,
     MailModule,
   ],
-  controllers: [AppController],
+  controllers: [AppController, CouplesController],
   providers: [AppService],
 })
 export class AppModule implements NestModule {
