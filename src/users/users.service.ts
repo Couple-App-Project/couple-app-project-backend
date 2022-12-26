@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { RandomGenerator } from '../util/create-random-password';
+import { RandomGenerator } from '../util/generator/create-random-password';
 
 @Injectable()
 export class UsersService {
