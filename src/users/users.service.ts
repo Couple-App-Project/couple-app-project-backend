@@ -14,6 +14,10 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
+    if (await this.isExistEmail(createUserDto.email)) {
+      return { message: '이미 가입된 email 입니다.' };
+    }
+
     let inviteCode;
 
     // 중복되는 코드가 있을 경우를 방지
