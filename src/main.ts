@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { SWAGGER_CONFIG } from './config/swagger.config';
+import { SuccessInterceptor } from './interceptors/success.interceptor';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,6 +14,8 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.enableCors();
+  app.useGlobalInterceptors(new SuccessInterceptor());
+
   await app.listen(configService.get('PORT'));
 }
 bootstrap();
