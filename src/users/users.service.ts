@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
-import { RandomGenerator } from '../util/create-random-password';
+import { RandomGenerator } from '../util/generator/create-random-password';
 
 @Injectable()
 export class UsersService {
@@ -30,17 +30,22 @@ export class UsersService {
         break;
       }
     }
-
-    return this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        name: createUserDto.name,
-        password: createUserDto.password,
-        birthDay: new Date(createUserDto.birthDay),
-        gender: createUserDto.gender,
-        inviteCode: inviteCode,
-      },
-    });
+    try {
+      await this.prisma.user.create({
+        data: {
+          email: createUserDto.email,
+          name: createUserDto.name,
+          password: createUserDto.password,
+          birthDay: new Date(createUserDto.birthDay),
+          gender: createUserDto.gender,
+          inviteCode: inviteCode,
+        },
+      });
+      return { message: '회원가입 완료.' };
+    } catch (e) {
+      console.error(e);
+      return { message: '데이터 형식을 다시 확인해주세요.' };
+    }
   }
 
   findAll() {

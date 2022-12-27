@@ -1,6 +1,8 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { IsDate, IsEmail } from 'class-validator';
 
 export class CreateUserDto {
+  @IsEmail()
   @ApiProperty({ example: 'kjng5901@gmail.com' })
   email: string;
 
@@ -10,7 +12,7 @@ export class CreateUserDto {
   @ApiProperty({ example: '5901' })
   password: string;
 
-  // TODO: 올바른 형식의 날짜만 들어올 수 있도록
+  @IsDate()
   @ApiProperty({ example: '1991-03-15' })
   birthDay: string;
 
