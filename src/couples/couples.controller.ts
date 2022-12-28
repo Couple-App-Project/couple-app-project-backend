@@ -10,6 +10,17 @@ export class CouplesController {
   constructor(private prisma: PrismaService) {}
   // TODO: 나와 상대방의 정보를 constructor에서 미리 정의하기.
 
+  @Get()
+  @ApiOperation({ summary: '커플 코드 조회' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getCoupleCode(@Req() req) {
+    const me = await this.prisma.user.findFirst({
+      where: { id: req.user.userId },
+    });
+    return { inviteCode: me.inviteCode };
+  }
+
   @Post()
   @ApiOperation({ summary: '커플 연결' })
   @UseGuards(JwtAuthGuard)
