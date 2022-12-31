@@ -1,24 +1,33 @@
-import { ApiProperty } from '@nestjs/swagger';
+import { CreateCalendarDto } from './create-calendar.dto';
+import { ApiProperty, PickType } from '@nestjs/swagger';
 import { Calendar } from '@prisma/client';
 
-export class CalendarDto {
-  @ApiProperty({ description: '일정 id' })
+export class CalendarDto extends PickType(CreateCalendarDto, [
+  'title',
+  'type',
+  'date',
+  'startTime',
+  'endTime',
+  'content',
+  'color',
+  'mood',
+]) {
+  @ApiProperty({ description: '일정 id', example: '1' })
   calendarId: number;
 
-  @ApiProperty({ description: '제목' })
-  title: string;
+  @ApiProperty()
+  userId: number;
 
-  @ApiProperty({ description: '내용' })
-  content: string;
-
-  @ApiProperty({ description: '컬러 (값 enum 활용 필요)' })
-  color: string;
-
-  @ApiProperty({ description: '무드 (값 enum 활용 필요)' })
-  mood: string;
+  @ApiProperty()
+  createdAt: Date;
 
   constructor(calendar: Calendar) {
+    super();
     this.calendarId = calendar.id;
+    this.type = calendar.type;
+    this.date = calendar.date;
+    this.startTime = calendar.startTime;
+    this.endTime = calendar.endTime;
     this.title = calendar.title;
     this.content = calendar.content;
     this.color = calendar.color;

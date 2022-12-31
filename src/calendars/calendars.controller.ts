@@ -4,11 +4,11 @@ import { JwtAuthGuard } from './../auth/jwt-auth.guard';
 import { CalendarsService } from './calendars.service';
 import { Body, Controller, Get, Post, UseGuards } from '@nestjs/common';
 import { User } from 'src/decorators/user.decorator';
-import { LoginUserDto } from 'src/users/dto/login-user.dto';
 import { CurrentUserDto } from 'src/users/dto/current-user.dto';
 import { CreateCalendarDto } from './dtos/create-calendar.dto';
 import { Calendar } from '@prisma/client';
 import { CalendarDto } from './dtos/calendar.dto';
+import { ApiCustomArrayResponseByDto } from 'src/decorators/api-ok-response/custom-array-response.decorator';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -17,12 +17,12 @@ import { CalendarDto } from './dtos/calendar.dto';
 export class CalendarsController {
   constructor(private readonly calendarsService: CalendarsService) {}
 
+  @ApiCustomArrayResponseByDto(CalendarDto)
   @ApiOperation({ summary: '캘린더 조회' })
   @Get()
-  async getCalendars(@User() user: CurrentUserDto) {
+  async getCalendars(@User() user: CurrentUserDto): Promise<CalendarDto[]> {
     const results: Calendar[] = await this.calendarsService.getCalendars(user);
 
-    return results;
     return results.map((result: Calendar) => new CalendarDto(result));
   }
 
