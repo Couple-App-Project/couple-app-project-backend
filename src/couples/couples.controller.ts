@@ -138,6 +138,9 @@ export class CouplesController {
     const myNickname = me.nickname || me.name;
     const yourNickname = opponent.nickname || opponent.name;
 
+    const myBirthday = me.birthDay;
+    const yourBirthday = opponent.birthDay;
+
     // coupleInformation 추출
     const { createdAt, updatedAt, id, ...coupleInformation } =
       await this.prisma.couple.findUnique({
@@ -150,6 +153,8 @@ export class CouplesController {
     return {
       myNickname,
       yourNickname,
+      myBirthday,
+      yourBirthday,
       ...coupleInformation,
     };
   }
