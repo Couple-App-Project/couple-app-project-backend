@@ -18,6 +18,7 @@ model User {
   password     String
   refreshToken String?
   gender       String
+  todayComment String     @default("")
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt    @default(now())
   couple       Couple?    @relation(fields: [coupleId], references: [id])

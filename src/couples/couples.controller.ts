@@ -65,14 +65,18 @@ export class CouplesController {
   }
 
   @Post('info')
-  @ApiOperation({ summary: '커플 정보 입력 및 수정' })
+  @ApiOperation({
+    summary: '커플 정보 입력 및 수정',
+    description: '모든 필드는 선택 입력 사항입니다.',
+  })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async addCoupleInformation(
     @Req() req,
     @Body() addCoupleInformationDto: AddCoupleInformationDto,
   ) {
-    const { nickname, ...coupleInformation } = addCoupleInformationDto;
+    const { nickname, todayComment, ...coupleInformation } =
+      addCoupleInformationDto;
 
     // 나의 커플 id 알기
     const me = await this.prisma.user.findFirst({
@@ -91,25 +95,40 @@ export class CouplesController {
       (value) => value.id !== req.user.userId,
     )[0];
 
-    // nickname 변경
-    await this.prisma.user.update({
-      where: {
-        id: opponent.id,
-      },
-      data: {
-        nickname: nickname,
-      },
-    });
+    if (nickname) {
+      // nickname 변경
+      await this.prisma.user.update({
+        where: {
+          id: opponent.id,
+        },
+        data: {
+          nickname,
+        },
+      });
+    }
 
-    // 커플 정보 업데이트
-    await this.prisma.couple.update({
-      where: {
-        id: me.coupleId,
-      },
-      data: coupleInformation,
-    });
+    if (todayComment) {
+      await this.prisma.user.update({
+        where: {
+          id: me.id,
+        },
+        data: {
+          todayComment,
+        },
+      });
+    }
 
-    return { message: '커플 정보 입력 및 수정 완료' };
+    if (coupleInformation) {
+      // 커플 정보 업데이트
+      await this.prisma.couple.update({
+        where: {
+          id: me.coupleId,
+        },
+        data: coupleInformation,
+      });
+
+      return { message: '커플 정보 입력 및 수정 완료' };
+    }
   }
 
   @Get('info')
