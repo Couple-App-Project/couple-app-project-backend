@@ -31,8 +31,11 @@ export class AuthService {
       userId: user.id,
       userName: user.name,
     };
+    const me = await this.usersService.findOne(user.email);
+
     return {
       access_token: this.jwtService.sign(payload),
+      isCoupleConnected: me.coupleId ? true : false,
     };
   }
 
