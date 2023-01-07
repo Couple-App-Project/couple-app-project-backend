@@ -18,7 +18,7 @@ export class CouplesController {
     const me = await this.prisma.user.findFirst({
       where: { id: req.user.userId },
     });
-    return { inviteCode: me.inviteCode };
+    return { userCode: me.inviteCode };
   }
 
   @Post()
