@@ -14,6 +14,10 @@ export class UsersService {
   }
 
   async create(createUserDto: CreateUserDto) {
+    if (await this.isExistEmail(createUserDto.email)) {
+      return { message: '이미 가입된 email 입니다.' };
+    }
+
     let inviteCode;
 
     // 중복되는 코드가 있을 경우를 방지
@@ -26,17 +30,22 @@ export class UsersService {
         break;
       }
     }
-
-    return this.prisma.user.create({
-      data: {
-        email: createUserDto.email,
-        name: createUserDto.name,
-        password: createUserDto.password,
-        birthDay: new Date(createUserDto.birthDay),
-        gender: createUserDto.gender,
-        inviteCode: inviteCode,
-      },
-    });
+    try {
+      await this.prisma.user.create({
+        data: {
+          email: createUserDto.email,
+          name: createUserDto.name,
+          password: createUserDto.password,
+          birthDay: new Date(createUserDto.birthDay),
+          gender: createUserDto.gender,
+          inviteCode: inviteCode,
+        },
+      });
+      return { message: '회원가입 완료.' };
+    } catch (e) {
+      console.error(e);
+      return { message: '데이터 형식을 다시 확인해주세요.' };
+    }
   }
 
   findAll() {
@@ -47,8 +56,8 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email: email } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    await this.prisma.user.update({ where: { id }, data: updateUserDto });
   }
 
   remove(id: number) {

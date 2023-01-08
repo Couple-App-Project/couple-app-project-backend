@@ -6,16 +6,19 @@ import { jwtConstants } from './constants';
 import { IJwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'access') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
     });
   }
 
-  async validate(payload: IJwtPayload): Promise<CurrentUserDto> {
-    return new CurrentUserDto(payload.userId, payload.userName);
+  async validate(payload: IJwtPayload) {
+    return new CurrentUserDto(
+      payload.userId,
+      payload.userName,
+      payload.userEmail,
+    );
   }
 }

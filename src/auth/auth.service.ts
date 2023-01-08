@@ -6,6 +6,7 @@ import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { RandomGenerator } from 'src/util/generator/create-random-password';
 import { IJwtPayload } from './interfaces/jwt-payload.interface';
+import { jwtConstants } from './constants';
 
 @Injectable()
 export class AuthService {
@@ -31,9 +32,24 @@ export class AuthService {
     const payload: IJwtPayload = {
       userId: user.id,
       userName: user.name,
+      userEmail: user.email,
     };
+    const me = await this.usersService.findOne(user.email);
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: jwtConstants.refreshSecret,
+      expiresIn: '24h',
+    });
+
+    await this.usersService.update(me.id, { refreshToken });
+
     return {
-      access_token: this.jwtService.sign(payload),
+      accessToken: this.jwtService.sign(payload, {
+        secret: jwtConstants.secret,
+        expiresIn: '1h',
+      }),
+      refreshToken,
+      isCoupleConnected: me.coupleId ? true : false,
     };
   }
 

@@ -13,4 +13,8 @@ export class AddCoupleInformationDto {
   @ApiProperty({ example: '아파트' })
   @IsOptional()
   specialPlace: string;
+
+  @ApiProperty({ example: '오늘도 사랑해' })
+  @IsOptional()
+  todayComment: string;
 }

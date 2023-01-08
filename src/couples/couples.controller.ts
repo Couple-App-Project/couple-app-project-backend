@@ -10,6 +10,17 @@ export class CouplesController {
   constructor(private prisma: PrismaService) {}
   // TODO: 나와 상대방의 정보를 constructor에서 미리 정의하기.
 
+  @Get()
+  @ApiOperation({ summary: '커플 코드 조회' })
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  async getCoupleCode(@Req() req) {
+    const me = await this.prisma.user.findFirst({
+      where: { id: req.user.userId },
+    });
+    return { userCode: me.inviteCode };
+  }
+
   @Post()
   @ApiOperation({ summary: '커플 연결' })
   @UseGuards(JwtAuthGuard)
@@ -22,13 +33,13 @@ export class CouplesController {
       return { message: '당신은 이미 커플로 연결된 상태입니다.' };
     }
 
-    const opponent = await this.prisma.user.findFirst({
+    const you = await this.prisma.user.findFirst({
       where: { inviteCode: connectCoupleDto.inviteCode },
     });
-    if (opponent.coupleId) {
+    if (you.coupleId) {
       return { message: '상대방이 이미 커플로 연결된 상태입니다.' };
     }
-    if (opponent.id === req.user.userId) {
+    if (you.id === req.user.userId) {
       return { message: '다른 사람의 코드를 입력하십시오.' };
     }
 
@@ -43,7 +54,7 @@ export class CouplesController {
     });
     await this.prisma.user.update({
       where: {
-        id: opponent.id,
+        id: you.id,
       },
       data: {
         coupleId: newCouple.id,
@@ -54,14 +65,18 @@ export class CouplesController {
   }
 
   @Post('info')
-  @ApiOperation({ summary: '커플 정보 입력 및 수정' })
+  @ApiOperation({
+    summary: '커플 정보 입력 및 수정',
+    description: '모든 필드는 선택 입력 사항입니다.',
+  })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
   async addCoupleInformation(
     @Req() req,
     @Body() addCoupleInformationDto: AddCoupleInformationDto,
   ) {
-    const { nickname, ...coupleInformation } = addCoupleInformationDto;
+    const { nickname, todayComment, ...coupleInformation } =
+      addCoupleInformationDto;
 
     // 나의 커플 id 알기
     const me = await this.prisma.user.findFirst({
@@ -71,34 +86,47 @@ export class CouplesController {
     });
 
     // 커플 id로 검색하여 상대방 데이터에 접근
-    const meAndOpponent = await this.prisma.user.findMany({
+    const meAndYou = await this.prisma.user.findMany({
       where: {
         coupleId: me.coupleId,
       },
     });
-    const opponent = meAndOpponent.filter(
-      (value) => value.id !== req.user.userId,
-    )[0];
+    const you = meAndYou.filter((value) => value.id !== req.user.userId)[0];
 
-    // nickname 변경
-    await this.prisma.user.update({
-      where: {
-        id: opponent.id,
-      },
-      data: {
-        nickname: nickname,
-      },
-    });
+    if (nickname) {
+      // nickname 변경
+      await this.prisma.user.update({
+        where: {
+          id: you.id,
+        },
+        data: {
+          nickname,
+        },
+      });
+    }
 
-    // 커플 정보 업데이트
-    await this.prisma.couple.update({
-      where: {
-        id: me.coupleId,
-      },
-      data: coupleInformation,
-    });
+    if (todayComment) {
+      await this.prisma.user.update({
+        where: {
+          id: me.id,
+        },
+        data: {
+          todayComment,
+        },
+      });
+    }
 
-    return { message: '커플 정보 입력 및 수정 완료' };
+    if (coupleInformation) {
+      // 커플 정보 업데이트
+      await this.prisma.couple.update({
+        where: {
+          id: me.coupleId,
+        },
+        data: coupleInformation,
+      });
+
+      return { message: '커플 정보 입력 및 수정 완료' };
+    }
   }
 
   @Get('info')
@@ -114,18 +142,22 @@ export class CouplesController {
     });
 
     // 상대방 파악
-    const meAndOpponent = await this.prisma.user.findMany({
+    const meAndYou = await this.prisma.user.findMany({
       where: {
         coupleId: me.coupleId,
       },
     });
-    const opponent = meAndOpponent.filter(
-      (value) => value.id !== req.user.userId,
-    )[0];
+    const you = meAndYou.filter((value) => value.id !== req.user.userId)[0];
 
     // 나와 상대방의 닉네임을 추출 (없을 경우 이름)
     const myNickname = me.nickname || me.name;
-    const yourNickname = opponent.nickname || opponent.name;
+    const yourNickname = you.nickname || you.name;
+
+    const myBirthday = me.birthDay;
+    const yourBirthday = you.birthDay;
+
+    const myTodayComment = me.todayComment;
+    const yourTodayComment = you.todayComment;
 
     // coupleInformation 추출
     const { createdAt, updatedAt, id, ...coupleInformation } =
@@ -139,6 +171,10 @@ export class CouplesController {
     return {
       myNickname,
       yourNickname,
+      myBirthday,
+      yourBirthday,
+      myTodayComment,
+      yourTodayComment,
       ...coupleInformation,
     };
   }
