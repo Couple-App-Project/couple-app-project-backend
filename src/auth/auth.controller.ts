@@ -6,11 +6,15 @@ import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
 import { MailService } from 'src/mail/mail.service';
+import { RefreshAuthGuard } from './refresh-auth.guard';
+import { jwtConstants } from './constants';
+import { JwtService } from '@nestjs/jwt';
 
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
+    private jwtService: JwtService,
     private readonly mailService: MailService,
   ) {}
 
@@ -32,5 +36,22 @@ export class AuthController {
   @Post('email')
   async validateEmail(@Body() checkEmailDto: CheckEmailDto) {
     return this.authService.validateEmail(checkEmailDto);
+  }
+
+  @UseGuards(RefreshAuthGuard)
+  @ApiOperation({ summary: 'Access token 재발급' })
+  @Get('reissue')
+  @ApiBearerAuth()
+  reissueAccessToken(@Req() req) {
+    const payload = {
+      userId: req.user.userId,
+      userName: req.user.userName,
+      userEmail: req.user.email,
+    };
+    const accessToken = this.jwtService.sign(payload, {
+      secret: jwtConstants.secret,
+      expiresIn: '1h',
+    });
+    return { accessToken };
   }
 }

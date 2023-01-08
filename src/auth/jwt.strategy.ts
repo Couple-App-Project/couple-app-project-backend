@@ -4,11 +4,10 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from './constants';
 
 @Injectable()
-export class JwtStrategy extends PassportStrategy(Strategy) {
+export class JwtStrategy extends PassportStrategy(Strategy, 'access') {
   constructor() {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
-      ignoreExpiration: false,
       secretOrKey: jwtConstants.secret,
     });
   }
@@ -17,6 +16,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     return {
       userId: payload.userId,
       userName: payload.userName,
+      userEmail: payload.email,
     };
   }
 }

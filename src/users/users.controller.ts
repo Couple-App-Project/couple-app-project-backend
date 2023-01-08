@@ -12,6 +12,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
+import { jwtConstants } from '../auth/constants';
 
 @Controller('users')
 export class UsersController {
@@ -26,12 +27,26 @@ export class UsersController {
     // TODO: password에 bcrypt 등 적용
     await this.usersService.create(createUserDto);
     const newUser = await this.usersService.findOne(createUserDto.email);
+    const payload = {
+      userId: newUser.id,
+      userName: newUser.name,
+      userEmail: newUser.email,
+    };
+
+    const refreshToken = this.jwtService.sign(payload, {
+      secret: jwtConstants.refreshSecret,
+      expiresIn: '24h',
+    });
+
+    await this.usersService.update(newUser.id, { refreshToken });
+
     return {
       message: '회원 가입 완료!',
-      access_token: this.jwtService.sign({
-        userId: newUser.id,
-        userName: newUser.name,
+      accessToken: this.jwtService.sign(payload, {
+        secret: jwtConstants.secret,
+        expiresIn: '1h',
       }),
+      refreshToken,
     };
   }
 

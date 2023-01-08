@@ -56,8 +56,8 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email: email } });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(id: number, updateUserDto: UpdateUserDto) {
+    await this.prisma.user.update({ where: { id }, data: updateUserDto });
   }
 
   remove(id: number) {
