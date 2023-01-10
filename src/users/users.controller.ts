@@ -13,12 +13,15 @@ import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../auth/constants';
+import { PrismaService } from '../prisma/prisma.service';
+import { Cron } from '@nestjs/schedule';
 
 @Controller('users')
 export class UsersController {
   constructor(
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
+    private readonly prismaService: PrismaService,
   ) {}
 
   @Post()
@@ -49,6 +52,15 @@ export class UsersController {
       }),
       refreshToken,
     };
+  }
+
+  @Cron('0 0 0 * * *')
+  @Post('todaycomment')
+  @ApiOperation({ summary: '오늘의 한마디 초기화(0시마다 실행)' })
+  async resetTodayComments() {
+    await this.prismaService.user.updateMany({
+      data: { todayComment: '' },
+    });
   }
 
   @Get()
