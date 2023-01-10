@@ -24,3 +24,5 @@ jobs:
 
       - name: PM2
         run: npm run pm2:deploy:app
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
