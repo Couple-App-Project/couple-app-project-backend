@@ -54,7 +54,7 @@ export class UsersController {
   }
 
   @Cron('0 0 0 * * *')
-  @Post('todaycomment')
+  @Patch('todaycomment')
   @ApiOperation({ summary: '오늘의 한마디 초기화(0시마다 실행)' })
   async resetTodayComments() {
     await this.prismaService.user.updateMany({
