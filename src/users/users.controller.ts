@@ -10,7 +10,7 @@ import {
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { ApiOperation } from '@nestjs/swagger';
+import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../auth/constants';
 
@@ -22,7 +22,8 @@ export class UsersController {
   ) {}
 
   @Post()
-  @ApiOperation({ summary: '회원가입' })
+  @ApiTags('회원 관리')
+  @ApiOperation({ summary: '회원 가입' })
   async create(@Body() createUserDto: CreateUserDto) {
     // TODO: password에 bcrypt 등 적용
     await this.usersService.create(createUserDto);

@@ -4,7 +4,7 @@ import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginUserDto } from '../users/dto/login-user.dto';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { MailService } from 'src/mail/mail.service';
 import { RefreshAuthGuard } from './refresh-auth.guard';
 import { jwtConstants } from './constants';
@@ -21,6 +21,7 @@ export class AuthController {
   ) {}
 
   @UseGuards(LocalAuthGuard)
+  @ApiTags('회원 인증')
   @ApiOperation({ summary: '로그인' })
   @Post('login')
   async login(@Req() req, @Body() loginUserDto: LoginUserDto) {
@@ -41,6 +42,7 @@ export class AuthController {
   }
 
   @UseGuards(RefreshAuthGuard)
+  @ApiTags('회원 인증')
   @ApiOperation({ summary: 'Access token 재발급' })
   @Get('reissue')
   @ApiBearerAuth()
@@ -58,6 +60,7 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
+  @ApiTags('회원 인증')
   @ApiOperation({ summary: '로그아웃' })
   @Get('logout')
   @ApiBearerAuth()

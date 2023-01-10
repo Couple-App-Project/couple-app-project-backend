@@ -1,5 +1,5 @@
 import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiOperation } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ConnectCoupleDto } from './dto/connect-couple.dto';
@@ -11,6 +11,7 @@ export class CouplesController {
   // TODO: 나와 상대방의 정보를 constructor에서 미리 정의하기.
 
   @Get()
+  @ApiTags('커플 관리')
   @ApiOperation({ summary: '커플 코드 조회' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -22,6 +23,7 @@ export class CouplesController {
   }
 
   @Post()
+  @ApiTags('커플 관리')
   @ApiOperation({ summary: '커플 연결' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
@@ -65,6 +67,7 @@ export class CouplesController {
   }
 
   @Post('info')
+  @ApiTags('커플 관리')
   @ApiOperation({
     summary: '커플 정보 입력 및 수정',
     description: '모든 필드는 선택 입력 사항입니다.',
@@ -130,6 +133,7 @@ export class CouplesController {
   }
 
   @Get('info')
+  @ApiTags('커플 관리')
   @ApiOperation({ summary: '커플 정보 조회' })
   @UseGuards(JwtAuthGuard)
   @ApiBearerAuth()
