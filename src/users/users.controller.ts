@@ -28,7 +28,6 @@ export class UsersController {
   @ApiTags('회원 관리')
   @ApiOperation({ summary: '회원 가입' })
   async create(@Body() createUserDto: CreateUserDto) {
-    // TODO: password에 bcrypt 등 적용
     await this.usersService.create(createUserDto);
     const newUser = await this.usersService.findOne(createUserDto.email);
     const payload = {

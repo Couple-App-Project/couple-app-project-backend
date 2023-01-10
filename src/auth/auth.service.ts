@@ -1,11 +1,12 @@
-import { MailService } from './../mail/mail.service';
-import { CheckEmailDto } from './../users/dto/check-email.dto';
+import { MailService } from '../mail/mail.service';
+import { CheckEmailDto } from '../users/dto/check-email.dto';
 import { ConflictException, Injectable } from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { RandomGenerator } from 'src/util/generator/create-random-password';
 import { jwtConstants } from './constants';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
@@ -18,13 +19,18 @@ export class AuthService {
   async validateUser(loginUserDto: LoginUserDto): Promise<any> {
     const user = await this.usersService.findOne(loginUserDto.email);
 
-    // TODO: bcrypt 도입
-
-    if (user && user.password === loginUserDto.password) {
-      const { password, ...result } = user;
-      return result;
+    if (!user) {
+      return null;
     }
-    return null;
+
+    const isMatch = await bcrypt.compare(loginUserDto.password, user.password);
+
+    if (!isMatch) {
+      return null;
+    }
+
+    const { password, ...result } = user;
+    return result;
   }
 
   async login(user: any) {

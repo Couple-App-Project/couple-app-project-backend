@@ -3,6 +3,7 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { RandomGenerator } from '../util/generator/create-random-password';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UsersService {
@@ -30,12 +31,15 @@ export class UsersService {
         break;
       }
     }
+
+    const hashedPassword = await bcrypt.hash(createUserDto.password, 10);
+
     try {
       await this.prisma.user.create({
         data: {
           email: createUserDto.email,
           name: createUserDto.name,
-          password: createUserDto.password,
+          password: hashedPassword,
           birthDay: new Date(createUserDto.birthDay),
           gender: createUserDto.gender,
           inviteCode: inviteCode,
