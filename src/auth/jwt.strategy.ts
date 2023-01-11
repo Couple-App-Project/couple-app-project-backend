@@ -1,7 +1,9 @@
+import { CurrentUserDto } from './../users/dto/current-user.dto';
 import { Injectable } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from './constants';
+import { IJwtPayload } from './interfaces/jwt-payload.interface';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'access') {
@@ -12,11 +14,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'access') {
     });
   }
 
-  async validate(payload: any) {
-    return {
-      userId: payload.userId,
-      userName: payload.userName,
-      userEmail: payload.email,
-    };
+  async validate(payload: IJwtPayload) {
+    return new CurrentUserDto(
+      payload.userId,
+      payload.userName,
+      payload.userEmail,
+    );
   }
 }

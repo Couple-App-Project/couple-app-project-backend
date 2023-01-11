@@ -5,6 +5,7 @@ import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import { LoginUserDto } from '../users/dto/login-user.dto';
 import { RandomGenerator } from 'src/util/generator/create-random-password';
+import { IJwtPayload } from './interfaces/jwt-payload.interface';
 import { jwtConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 
@@ -34,7 +35,7 @@ export class AuthService {
   }
 
   async login(user: any) {
-    const payload = {
+    const payload: IJwtPayload = {
       userId: user.id,
       userName: user.name,
       userEmail: user.email,
