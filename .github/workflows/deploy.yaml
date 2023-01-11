@@ -28,4 +28,6 @@ jobs:
           host: ${{ secrets.HOST_DNS }}
           username: ${{ secrets.USERNAME }}
           key: ${{ secrets.EC2_SSH_KEY }}
-          script: npm run pm2:deploy:app
+          script: |
+            cd couple-app-project-backend
+            npm run pm2:deploy:app
