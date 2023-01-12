@@ -9,6 +9,7 @@ import { MailModule } from './mail/mail.module';
 import { LoggerMiddleware } from './middleware/logger/http-logger.middleware';
 import { validate } from './util/validator/env.validation';
 import { CouplesController } from './couples/couples.controller';
+import { CalendarsModule } from './calendars/calendars.module';
 
 @Module({
   imports: [
@@ -21,6 +22,7 @@ import { CouplesController } from './couples/couples.controller';
     PrismaModule,
     AuthModule,
     MailModule,
+    CalendarsModule,
   ],
   controllers: [AppController, CouplesController],
   providers: [AppService],
