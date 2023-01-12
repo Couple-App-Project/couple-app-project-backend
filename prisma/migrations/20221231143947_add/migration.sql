@@ -11,13 +11,3 @@
 ALTER TABLE "Calendar" ADD COLUMN     "date" TEXT NOT NULL,
 ADD COLUMN     "endTime" TEXT NOT NULL,
 ADD COLUMN     "startTime" TEXT NOT NULL;
-
--- AlterTable
-ALTER TABLE "Couple" DROP COLUMN "startDate",
-ADD COLUMN     "anniversary" TEXT,
-ADD COLUMN     "specialPlace" TEXT;
-
--- AlterTable
-ALTER TABLE "User" ADD COLUMN     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-ADD COLUMN     "nickname" TEXT,
-ADD COLUMN     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP;
