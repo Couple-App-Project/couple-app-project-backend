@@ -40,5 +40,5 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd couple-app-project-backend
-            npx prisma migrate deploy
+            dotenv -e .env.dev -- npx prisma migrate deploy
             pm2 restart app.json
