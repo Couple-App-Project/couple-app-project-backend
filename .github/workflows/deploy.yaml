@@ -30,18 +30,15 @@ jobs:
 
       - run: npm install
       - run: npx prisma generate
-      - run: npx prisma migrate deploy
-        env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
       - run: npm run build
       - run: npm i pm2 && pm2 restart app.json
 
-#      - name: Start PM2
-#        uses: appleboy/ssh-action@master
-#        with:
-#          host: ${{ secrets.HOST_DNS }}
-#          username: ${{ secrets.USERNAME }}
-#          key: ${{ secrets.EC2_SSH_KEY }}
-#          script: |
-#            cd couple-app-project-backend
-#            npm run pm2:deploy:app
+      - name: Start PM2
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.HOST_DNS }}
+          username: ${{ secrets.USERNAME }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            cd couple-app-project-backend
+            npx prisma migrate deploy
