@@ -14,14 +14,6 @@ jobs:
       - name: Checkout the files
         uses: actions/checkout@v3
 
-      - name: Deploy to Server
-        uses: easingthemes/ssh-deploy@main
-        env:
-          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
-          REMOTE_HOST: ${{ secrets.HOST_DNS }}
-          REMOTE_USER: ${{ secrets.USERNAME }}
-          TARGET: ${{ secrets.TARGET_DIR }}
-
       - name: Set Node & NPM
         uses: actions/setup-node@v3
         with:
@@ -31,7 +23,14 @@ jobs:
       - run: npm install
       - run: npx prisma generate
       - run: npm run build
-      - run: npm i pm2 && pm2 restart app.json
+
+      - name: Deploy to Server
+        uses: easingthemes/ssh-deploy@main
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.EC2_SSH_KEY }}
+          REMOTE_HOST: ${{ secrets.HOST_DNS }}
+          REMOTE_USER: ${{ secrets.USERNAME }}
+          TARGET: ${{ secrets.TARGET_DIR }}
 
       - name: Start PM2
         uses: appleboy/ssh-action@master
@@ -42,3 +41,4 @@ jobs:
           script: |
             cd couple-app-project-backend
             npx prisma migrate deploy
+            pm2 restart app.json
