@@ -29,9 +29,10 @@ jobs:
           cache: 'npm'
 
       - run: npm install
+      - run: npx prisma generate
+      - run: npx prisma migrate deploy
       - run: npm run build
-      - run: npm i pm2
-      - run: npm run pm2:deploy:app
+      - run: npm i pm2 && pm2 restart app.json
 
 #      - name: Start PM2
 #        uses: appleboy/ssh-action@master
