@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
 import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
@@ -32,17 +40,17 @@ export class CouplesController {
       where: { id: req.user.userId },
     });
     if (me.coupleId) {
-      return { message: '당신은 이미 커플로 연결된 상태입니다.' };
+      throw new BadRequestException('당신은 이미 커플로 연결된 상태입니다.');
     }
 
     const you = await this.prisma.user.findFirst({
       where: { inviteCode: connectCoupleDto.inviteCode },
     });
     if (you.coupleId) {
-      return { message: '상대방이 이미 커플로 연결된 상태입니다.' };
+      throw new BadRequestException('상대방이 이미 커플로 연결된 상태입니다.');
     }
     if (you.id === req.user.userId) {
-      return { message: '다른 사람의 코드를 입력하십시오.' };
+      return new BadRequestException('다른 사람의 코드를 입력하십시오.');
     }
 
     const newCouple = await this.prisma.couple.create({ data: {} });

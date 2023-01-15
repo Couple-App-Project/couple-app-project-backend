@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, HttpException, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,7 +16,7 @@ export class UsersService {
 
   async create(createUserDto: CreateUserDto) {
     if (await this.isExistEmail(createUserDto.email)) {
-      return { message: '이미 가입된 email 입니다.' };
+      throw new BadRequestException('이미 가입된 email 입니다.');
     }
 
     let inviteCode;
@@ -48,7 +48,7 @@ export class UsersService {
       return { message: '회원가입 완료.' };
     } catch (e) {
       console.error(e);
-      return { message: '데이터 형식을 다시 확인해주세요.' };
+      throw new BadRequestException('데이터 형식을 다시 확인해주세요.');
     }
   }
 

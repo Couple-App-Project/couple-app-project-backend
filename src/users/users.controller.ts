@@ -36,6 +36,11 @@ export class UsersController {
       userEmail: newUser.email,
     };
 
+    const accessToken = this.jwtService.sign(payload, {
+      secret: jwtConstants.secret,
+      expiresIn: '1h',
+    });
+
     const refreshToken = this.jwtService.sign(payload, {
       secret: jwtConstants.refreshSecret,
       expiresIn: '24h',
@@ -45,10 +50,7 @@ export class UsersController {
 
     return {
       message: '회원 가입 완료!',
-      accessToken: this.jwtService.sign(payload, {
-        secret: jwtConstants.secret,
-        expiresIn: '1h',
-      }),
+      accessToken,
       refreshToken,
     };
   }
