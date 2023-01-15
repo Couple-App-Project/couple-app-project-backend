@@ -30,13 +30,15 @@ jobs:
 
       - run: npm install
       - run: npm run build
+      - run: npm i pm2
+      - run: npm run pm2:deploy:app
 
-      - name: Start PM2
-        uses: appleboy/ssh-action@master
-        with:
-          host: ${{ secrets.HOST_DNS }}
-          username: ${{ secrets.USERNAME }}
-          key: ${{ secrets.EC2_SSH_KEY }}
-          script: |
-            cd couple-app-project-backend
-            npm run pm2:deploy:app
+#      - name: Start PM2
+#        uses: appleboy/ssh-action@master
+#        with:
+#          host: ${{ secrets.HOST_DNS }}
+#          username: ${{ secrets.USERNAME }}
+#          key: ${{ secrets.EC2_SSH_KEY }}
+#          script: |
+#            cd couple-app-project-backend
+#            npm run pm2:deploy:app
