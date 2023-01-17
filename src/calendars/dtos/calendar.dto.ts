@@ -1,36 +1,38 @@
 import { CreateCalendarDto } from './create-calendar.dto';
 import { ApiProperty, PickType } from '@nestjs/swagger';
-import { Calendar } from '@prisma/client';
+import { Calendar, User } from '@prisma/client';
+import { UserDto } from 'src/common/dtos/user.dto';
 
 export class CalendarDto extends PickType(CreateCalendarDto, [
   'title',
   'type',
-  'date',
+  'startDate',
+  'endDate',
   'startTime',
   'endTime',
   'content',
-  'color',
-  'mood',
+  'location',
 ]) {
   @ApiProperty({ description: '일정 id', example: '1' })
   calendarId: number;
 
-  @ApiProperty()
-  userId: number;
+  @ApiProperty({ description: '작성자 정보', type: UserDto })
+  authorInfo: UserDto;
 
   @ApiProperty()
   createdAt: Date;
 
-  constructor(calendar: Calendar) {
+  constructor(calendar: Calendar & { user: User }) {
     super();
     this.calendarId = calendar.id;
+    this.authorInfo = new UserDto(calendar.user);
     this.type = calendar.type;
-    this.date = calendar.date;
+    this.startDate = calendar.startDate;
+    this.endDate = calendar.endDate;
     this.startTime = calendar.startTime;
     this.endTime = calendar.endTime;
     this.title = calendar.title;
     this.content = calendar.content;
-    this.color = calendar.color;
-    this.mood = calendar.mood;
+    this.location = calendar.location;
   }
 }

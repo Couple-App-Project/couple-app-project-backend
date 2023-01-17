@@ -1,3 +1,4 @@
+import { ValidationPipe } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { NestFactory } from '@nestjs/core';
 import { SwaggerModule } from '@nestjs/swagger';
@@ -15,6 +16,12 @@ async function bootstrap() {
 
   app.enableCors();
   app.useGlobalInterceptors(new SuccessInterceptor());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      forbidUnknownValues: false,
+    }),
+  );
 
   await app.listen(configService.get('PORT'));
 }
