@@ -10,6 +10,7 @@ import { LoggerMiddleware } from './middleware/logger/http-logger.middleware';
 import { validate } from './util/validator/env.validation';
 import { CouplesController } from './couples/couples.controller';
 import { CalendarsModule } from './calendars/calendars.module';
+import { CouplesService } from './couples/couples.service';
 
 @Module({
   imports: [
@@ -25,7 +26,7 @@ import { CalendarsModule } from './calendars/calendars.module';
     CalendarsModule,
   ],
   controllers: [AppController, CouplesController],
-  providers: [AppService],
+  providers: [AppService, CouplesService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {
