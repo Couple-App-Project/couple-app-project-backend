@@ -10,6 +10,7 @@ import { RefreshAuthGuard } from './refresh-auth.guard';
 import { jwtConstants } from './constants';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Controller('auth')
 export class AuthController {
@@ -17,6 +18,7 @@ export class AuthController {
     private authService: AuthService,
     private jwtService: JwtService,
     private usersService: UsersService,
+    private prismaService: PrismaService,
     private readonly mailService: MailService,
   ) {}
 
@@ -65,7 +67,10 @@ export class AuthController {
   @Get('logout')
   @ApiBearerAuth()
   async logout(@Req() req) {
-    await this.usersService.update(req.user.userId, { refreshToken: null });
+    await this.prismaService.user.update({
+      where: { id: req.user.userId },
+      data: { refreshToken: null },
+    });
     return { message: '로그아웃 되었습니다.' };
   }
 }

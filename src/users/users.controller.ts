@@ -9,7 +9,6 @@ import {
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
-import { UpdateUserDto } from './dto/update-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
 import { JwtService } from '@nestjs/jwt';
 import { jwtConstants } from '../auth/constants';
@@ -29,7 +28,9 @@ export class UsersController {
   @ApiOperation({ summary: '회원 가입' })
   async create(@Body() createUserDto: CreateUserDto) {
     await this.usersService.create(createUserDto);
-    const newUser = await this.usersService.findOne(createUserDto.email);
+    const newUser = await this.prismaService.user.findUnique({
+      where: { email: createUserDto.email },
+    });
     const payload = {
       userId: newUser.id,
       userName: newUser.name,
@@ -46,7 +47,10 @@ export class UsersController {
       expiresIn: '24h',
     });
 
-    await this.usersService.update(newUser.id, { refreshToken });
+    await this.prismaService.user.update({
+      where: { id: newUser.id },
+      data: { refreshToken },
+    });
 
     return {
       message: '회원 가입 완료!',
@@ -62,25 +66,5 @@ export class UsersController {
     await this.prismaService.user.updateMany({
       data: { todayComment: '' },
     });
-  }
-
-  @Get()
-  findAll() {
-    return this.usersService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('email') email: string) {
-    return this.usersService.findOne(email);
-  }
-
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
-    return this.usersService.update(+id, updateUserDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.usersService.remove(+id);
   }
 }
