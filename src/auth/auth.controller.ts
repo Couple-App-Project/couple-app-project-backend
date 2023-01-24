@@ -11,6 +11,8 @@ import { jwtConstants } from './constants';
 import { JwtService } from '@nestjs/jwt';
 import { UsersService } from '../users/users.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { currentUser } from '../decorators/user.decorator';
+import { CurrentUserDto } from '../users/dto/current-user.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -26,16 +28,19 @@ export class AuthController {
   @ApiTags('회원 인증')
   @ApiOperation({ summary: '로그인' })
   @Post('login')
-  async login(@Req() req, @Body() loginUserDto: LoginUserDto) {
-    return this.authService.login(req.user);
+  async login(
+    @currentUser() user: CurrentUserDto,
+    @Body() loginUserDto: LoginUserDto,
+  ) {
+    return this.authService.login(user);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '토큰 테스트' })
   @Get('profile')
   @ApiBearerAuth()
-  getProfile(@Req() req) {
-    return `유효한 토큰! 로그인되어 있음. userId: ${req.user.userId}, userName: ${req.user.userName}`;
+  getProfile(@currentUser() user: CurrentUserDto) {
+    return `유효한 토큰! 로그인되어 있음. userId: ${user.userId}, userName: ${user.userName}`;
   }
 
   @Post('email')
@@ -48,11 +53,11 @@ export class AuthController {
   @ApiOperation({ summary: 'Access token 재발급' })
   @Get('reissue')
   @ApiBearerAuth()
-  reissueAccessToken(@Req() req) {
+  reissueAccessToken(@currentUser() user: CurrentUserDto) {
     const payload = {
-      userId: req.user.userId,
-      userName: req.user.userName,
-      userEmail: req.user.email,
+      userId: user.userId,
+      userName: user.userName,
+      userEmail: user.userEmail,
     };
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
@@ -66,9 +71,9 @@ export class AuthController {
   @ApiOperation({ summary: '로그아웃' })
   @Get('logout')
   @ApiBearerAuth()
-  async logout(@Req() req) {
+  async logout(@currentUser() user: CurrentUserDto) {
     await this.prismaService.user.update({
-      where: { id: req.user.userId },
+      where: { id: user.userId },
       data: { refreshToken: null },
     });
     return { message: '로그아웃 되었습니다.' };

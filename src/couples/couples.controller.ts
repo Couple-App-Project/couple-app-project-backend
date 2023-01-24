@@ -14,6 +14,8 @@ import { ConnectCoupleDto } from './dto/connect-couple.dto';
 import { AddCoupleInformationDto } from './dto/add-couple-information.dto';
 import { UsersService } from '../users/users.service';
 import { CouplesService } from './couples.service';
+import { currentUser } from '../decorators/user.decorator';
+import { CurrentUserDto } from '../users/dto/current-user.dto';
 
 @ApiTags('커플 관리')
 @UseGuards(JwtAuthGuard)
@@ -28,10 +30,10 @@ export class CouplesController {
 
   @Get()
   @ApiOperation({ summary: '커플 코드 조회' })
-  async getCoupleCode(@Req() req) {
+  async getCoupleCode(@currentUser() user: CurrentUserDto) {
     const me = await this.prismaService.user.findUnique({
       where: {
-        email: req.user.userEmail,
+        email: user.userEmail,
       },
     });
     return { userCode: me.inviteCode };
@@ -39,9 +41,12 @@ export class CouplesController {
 
   @Post()
   @ApiOperation({ summary: '커플 연결' })
-  async connectCouple(@Req() req, @Body() connectCoupleDto: ConnectCoupleDto) {
+  async connectCouple(
+    @currentUser() user: CurrentUserDto,
+    @Body() connectCoupleDto: ConnectCoupleDto,
+  ) {
     const me = await this.prismaService.user.findUnique({
-      where: { email: req.user.userEmail },
+      where: { email: user.userEmail },
     });
     if (me.coupleId) {
       throw new BadRequestException('당신은 이미 커플로 연결된 상태입니다.');
@@ -53,7 +58,7 @@ export class CouplesController {
     if (you.coupleId) {
       throw new BadRequestException('상대방이 이미 커플로 연결된 상태입니다.');
     }
-    if (you.id === req.user.userId) {
+    if (you.id === user.userId) {
       return new BadRequestException('다른 사람의 코드를 입력하십시오.');
     }
 
@@ -68,13 +73,13 @@ export class CouplesController {
     description: '모든 필드는 선택 입력 사항입니다.',
   })
   async addCoupleInformation(
-    @Req() req,
+    @currentUser() user: CurrentUserDto,
     @Body() addCoupleInformationDto: AddCoupleInformationDto,
   ) {
     const { nickname, todayComment, ...coupleInformation } =
       addCoupleInformationDto;
 
-    const [me, you] = await this.couplesService.findMeAndYou(req.user.userId);
+    const [me, you] = await this.couplesService.findMeAndYou(user.userId);
 
     if (nickname) {
       await this.prismaService.user.update({
@@ -102,8 +107,8 @@ export class CouplesController {
 
   @Get('info')
   @ApiOperation({ summary: '커플 정보 조회' })
-  async getCoupleInformation(@Req() req) {
-    const [me, you] = await this.couplesService.findMeAndYou(req.user.userId);
+  async getCoupleInformation(@currentUser() user: CurrentUserDto) {
+    const [me, you] = await this.couplesService.findMeAndYou(user.userId);
 
     // 나와 상대방의 닉네임을 추출 (없을 경우 이름)
     const myNickname = me.nickname || me.name;
