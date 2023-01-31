@@ -1,5 +1,14 @@
 import { CheckEmailDto } from './../users/dto/check-email.dto';
-import { Body, Controller, Get, Post, Req, UseGuards } from '@nestjs/common';
+import {
+  BadRequestException,
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LocalAuthGuard } from './local-auth.guard';
 import { JwtAuthGuard } from './jwt-auth.guard';
@@ -9,31 +18,36 @@ import { MailService } from 'src/mail/mail.service';
 import { RefreshAuthGuard } from './refresh-auth.guard';
 import { jwtConstants } from './constants';
 import { JwtService } from '@nestjs/jwt';
-import { UsersService } from '../users/users.service';
+import { PrismaService } from '../prisma/prisma.service';
+import { currentUser } from '../decorators/user.decorator';
+import { CurrentUserDto } from '../users/dto/current-user.dto';
 
+@ApiTags('회원 인증')
 @Controller('auth')
 export class AuthController {
   constructor(
     private authService: AuthService,
     private jwtService: JwtService,
-    private usersService: UsersService,
+    private prismaService: PrismaService,
     private readonly mailService: MailService,
   ) {}
 
   @UseGuards(LocalAuthGuard)
-  @ApiTags('회원 인증')
   @ApiOperation({ summary: '로그인' })
   @Post('login')
-  async login(@Req() req, @Body() loginUserDto: LoginUserDto) {
-    return this.authService.login(req.user);
+  async login(
+    @currentUser() user: CurrentUserDto,
+    @Body() loginUserDto: LoginUserDto,
+  ) {
+    return this.authService.login(user);
   }
 
   @UseGuards(JwtAuthGuard)
   @ApiOperation({ summary: '토큰 테스트' })
   @Get('profile')
   @ApiBearerAuth()
-  getProfile(@Req() req) {
-    return `유효한 토큰! 로그인되어 있음. userId: ${req.user.userId}, userName: ${req.user.userName}`;
+  getProfile(@currentUser() user: CurrentUserDto) {
+    return `유효한 토큰! 로그인되어 있음. userId: ${user.userId}, userName: ${user.userName}`;
   }
 
   @Post('email')
@@ -42,15 +56,14 @@ export class AuthController {
   }
 
   @UseGuards(RefreshAuthGuard)
-  @ApiTags('회원 인증')
   @ApiOperation({ summary: 'Access token 재발급' })
   @Get('reissue')
   @ApiBearerAuth()
-  reissueAccessToken(@Req() req) {
+  reissueAccessToken(@currentUser() user: CurrentUserDto) {
     const payload = {
-      userId: req.user.userId,
-      userName: req.user.userName,
-      userEmail: req.user.email,
+      userId: user.userId,
+      userName: user.userName,
+      userEmail: user.userEmail,
     };
     const accessToken = this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
@@ -60,12 +73,29 @@ export class AuthController {
   }
 
   @UseGuards(JwtAuthGuard)
-  @ApiTags('회원 인증')
   @ApiOperation({ summary: '로그아웃' })
   @Get('logout')
   @ApiBearerAuth()
-  async logout(@Req() req) {
-    await this.usersService.update(req.user.userId, { refreshToken: null });
+  async logout(@currentUser() user: CurrentUserDto) {
+    await this.prismaService.user.update({
+      where: { id: user.userId },
+      data: { refreshToken: null },
+    });
     return { message: '로그아웃 되었습니다.' };
+  }
+
+  @ApiOperation({ summary: '이메일 중복 확인' })
+  @Get('exist/:email')
+  async isExistEmail(@Param('email') email: string) {
+    const existUser = await this.prismaService.user.findFirst({
+      where: { email: email },
+    });
+    const isExist = !!existUser;
+
+    if (isExist) {
+      throw new BadRequestException('이미 가입된 email 입니다.');
+    }
+
+    return { message: '가입 가능한 email 입니다.' };
   }
 }

@@ -2,11 +2,11 @@ import { Injectable, Req, UnauthorizedException } from '@nestjs/common';
 import { PassportStrategy } from '@nestjs/passport';
 import { ExtractJwt, Strategy } from 'passport-jwt';
 import { jwtConstants } from './constants';
-import { UsersService } from '../users/users.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
-  constructor(private usersService: UsersService) {
+  constructor(private prismaService: PrismaService) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       secretOrKey: jwtConstants.refreshSecret,
@@ -15,7 +15,9 @@ export class RefreshStrategy extends PassportStrategy(Strategy, 'refresh') {
   }
 
   async validate(@Req() req, payload: any) {
-    const me = await this.usersService.findOne(payload.userEmail);
+    const me = await this.prismaService.user.findUnique({
+      where: { email: payload.userEmail },
+    });
 
     const refreshToken = req.get('Authorization').replace('Bearer', '').trim();
 

@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { UsersModule } from '../users/users.module';
 import { PassportModule } from '@nestjs/passport';
 import { LocalStrategy } from './local.strategy';
 import { JwtModule } from '@nestjs/jwt';
@@ -10,7 +9,7 @@ import { MailModule } from 'src/mail/mail.module';
 import { RefreshStrategy } from './refresh.strategy';
 
 @Module({
-  imports: [UsersModule, PassportModule, JwtModule.register({}), MailModule],
+  imports: [PassportModule, JwtModule.register({}), MailModule],
   providers: [AuthService, LocalStrategy, JwtStrategy, RefreshStrategy],
   controllers: [AuthController],
 })
