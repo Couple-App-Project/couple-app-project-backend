@@ -29,6 +29,7 @@ import { ApiCustomArrayResponseByDto } from 'src/decorators/api-ok-response/cust
 import { GetCalendarQueryDto } from './dtos/get-calendar-query.dto';
 import { ApiCustomResponseByDto } from 'src/decorators/api-ok-response/custom-response.decorator';
 import { UpdateCalendarDto } from './dtos/update-calendar.dto';
+import { NewCalendarDto } from './dtos/new-calendar.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -67,15 +68,19 @@ export class CalendarsController {
     return new CalendarDto(existCalendar);
   }
 
+  @ApiCustomResponseByDto(NewCalendarDto)
   @ApiOperation({ summary: '캘린더 생성' })
   @Post()
   async createCalendar(
     @currentUser() user: CurrentUserDto,
     @Body() createCalendarDto: CreateCalendarDto,
   ) {
-    await this.calendarsService.createCalendar(user, createCalendarDto);
+    const newCalendar: Calendar = await this.calendarsService.createCalendar(
+      user,
+      createCalendarDto,
+    );
 
-    return ResponseMessage.CREATE_CALENDAR;
+    return new NewCalendarDto(ResponseMessage.CREATE_CALENDAR, newCalendar);
   }
 
   @ApiOperation({ summary: '캘린더 수정' })
