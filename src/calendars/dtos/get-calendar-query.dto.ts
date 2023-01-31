@@ -1,9 +1,9 @@
-import { IsEnum, IsOptional } from 'class-validator';
+import { IsEnum, IsOptional, IsString } from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { DateStringGenerator } from 'src/util/generator/create-date-string';
 
 export class GetCalendarQueryDto {
-  @ApiPropertyOptional({ description: '조회 월 YYMM (생략 시 현재 월)' })
+  @ApiPropertyOptional({ description: '조회 월 YYMM (생략 시 전체)' })
   @IsOptional()
   month?: string;
 
@@ -15,6 +15,14 @@ export class GetCalendarQueryDto {
   @IsEnum(['데이트', '기념일'])
   type?: string;
 
+  @ApiPropertyOptional({
+    description: '검색 키워드',
+    example: '코엑스',
+  })
+  @IsOptional()
+  @IsString()
+  keyword?: string;
+
   #firstDate: string;
 
   public hasMonth(): boolean {
@@ -25,11 +33,12 @@ export class GetCalendarQueryDto {
     return this.type ? true : false;
   }
 
-  public getStartDate() {
-    this.#firstDate = this.month
-      ? DateStringGenerator.getFirstDayByYYMM(this.month)
-      : DateStringGenerator.getFirstDayByDate(new Date());
+  public hasKeyword(): boolean {
+    return this.keyword ? true : false;
+  }
 
+  public getStartDate() {
+    this.#firstDate = DateStringGenerator.getFirstDayByYYMM(this.month);
     return this.#firstDate;
   }
 

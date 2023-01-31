@@ -39,10 +39,18 @@ export class CalendarsService {
     return await this.prismaService.calendar.findMany({
       where: {
         userId: { in: currentCoupleUserIds },
-        startDate: { gte: queryOption.getStartDate() },
-        endDate: { lte: queryOption.getEndDate() },
+        startDate: queryOption.hasMonth()
+          ? { gte: queryOption.getStartDate() }
+          : undefined,
+        endDate: queryOption.hasMonth()
+          ? { lte: queryOption.getEndDate() }
+          : undefined,
         type: queryOption.hasType() ? queryOption.type : undefined,
+        title: queryOption.hasKeyword()
+          ? { contains: queryOption.keyword, mode: 'insensitive' }
+          : undefined,
       },
+      orderBy: [{ startDate: 'asc' }, { startTime: 'asc' }],
       include: { user: true },
     });
   }
@@ -83,7 +91,7 @@ export class CalendarsService {
   async createCalendar(
     user: CurrentUserDto,
     createCalendarDto: CreateCalendarDto,
-  ): Promise<void> {
+  ): Promise<Calendar> {
     const {
       title,
       type,
@@ -107,7 +115,7 @@ export class CalendarsService {
       user: { connect: { id: user.userId } },
     };
 
-    await this.prismaService.calendar.create({
+    return await this.prismaService.calendar.create({
       data: newCalendar,
     });
   }
