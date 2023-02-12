@@ -8,9 +8,8 @@ import { AuthModule } from './auth/auth.module';
 import { MailModule } from './mail/mail.module';
 import { LoggerMiddleware } from './middleware/logger/http-logger.middleware';
 import { validate } from './util/validator/env.validation';
-import { CouplesController } from './couples/couples.controller';
 import { CalendarsModule } from './calendars/calendars.module';
-import { CouplesService } from './couples/couples.service';
+import { CouplesModule } from './couples/couples.module';
 
 @Module({
   imports: [
@@ -24,9 +23,10 @@ import { CouplesService } from './couples/couples.service';
     AuthModule,
     MailModule,
     CalendarsModule,
+    CouplesModule,
   ],
-  controllers: [AppController, CouplesController],
-  providers: [AppService, CouplesService],
+  controllers: [AppController],
+  providers: [AppService],
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer): any {

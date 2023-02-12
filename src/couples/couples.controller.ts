@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   Post,
-  Req,
   UseGuards,
 } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -12,7 +11,6 @@ import { PrismaService } from '../prisma/prisma.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { ConnectCoupleDto } from './dto/connect-couple.dto';
 import { AddCoupleInformationDto } from './dto/add-couple-information.dto';
-import { UsersService } from '../users/users.service';
 import { CouplesService } from './couples.service';
 import { currentUser } from '../decorators/user.decorator';
 import { CurrentUserDto } from '../users/dto/current-user.dto';
@@ -24,7 +22,6 @@ import { CurrentUserDto } from '../users/dto/current-user.dto';
 export class CouplesController {
   constructor(
     private prismaService: PrismaService,
-    private usersService: UsersService,
     private couplesService: CouplesService,
   ) {}
 
