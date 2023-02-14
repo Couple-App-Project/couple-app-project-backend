@@ -10,6 +10,7 @@ import { LoggerMiddleware } from './middleware/logger/http-logger.middleware';
 import { validate } from './util/validator/env.validation';
 import { CalendarsModule } from './calendars/calendars.module';
 import { CouplesModule } from './couples/couples.module';
+import { DiariesModule } from './diaries/diaries.module';
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { CouplesModule } from './couples/couples.module';
     MailModule,
     CalendarsModule,
     CouplesModule,
+    DiariesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -20,18 +20,19 @@ model User {
   gender       String
   todayComment String     @default("")
   createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt    @default(now())
+  updatedAt    DateTime   @default(now()) @updatedAt
   couple       Couple?    @relation(fields: [coupleId], references: [id])
   calendars    Calendar[]
+  diaries      Diary[]
 }
 
 model Couple {
-  id            Int         @id @default(autoincrement())
-  anniversary   String?
-  specialPlace  String?
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-  users         User[]
+  id           Int      @id @default(autoincrement())
+  anniversary  String?
+  specialPlace String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  users        User[]
 }
 
 model Calendar {
@@ -48,4 +49,18 @@ model Calendar {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   user      User     @relation(fields: [userId], references: [id])
+  diaries   Diary[]
+}
+
+model Diary {
+  id         Int      @id @default(autoincrement())
+  userId     Int
+  calendarId Int
+  title      String
+  content    String
+  images     String[]
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  calendar   Calendar @relation(fields: [calendarId], references: [id])
+  user       User     @relation(fields: [userId], references: [id])
 }
