@@ -60,6 +60,7 @@ model Diary {
   title      String
   content    String
   images     String[]
+  labeled    Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
   calendar   Calendar @relation(fields: [calendarId], references: [id])
