@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CouplesService } from '../couples/couples.service';
 import { CurrentUserDto } from '../users/dto/current-user.dto';
@@ -17,6 +17,9 @@ export class DiariesService {
         id: diaryId,
       },
     });
+    if (!diary) {
+      throw new BadRequestException('다이어리를 찾을 수 없습니다.');
+    }
     return [me.id, you.id].includes(diary.userId);
   }
 }

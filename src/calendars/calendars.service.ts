@@ -220,6 +220,9 @@ export class CalendarsService {
         id: calendarId,
       },
     });
+    if (!calendar) {
+      throw new BadRequestException(ErrorMessage.NOT_EXIST);
+    }
     return [me.id, you.id].includes(calendar.userId);
   }
 }
