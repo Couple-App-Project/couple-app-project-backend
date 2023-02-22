@@ -122,4 +122,34 @@ export class DiariesController {
     });
     return { message: '다이어리 삭제 완료.' };
   }
+
+  @ApiOperation({ summary: '다이어리 라벨 ON/OFF' })
+  @Put('label/:diaryId')
+  async onOffDiaryLabel(
+    @currentUser() user: CurrentUserDto,
+    @Param('diaryId', ParseIntPipe) diaryId: number,
+  ) {
+    const isOurDiary = await this.diariesService.isOurDiary(user, diaryId);
+
+    if (!isOurDiary) {
+      throw new ForbiddenException('해당 다이어리의 수정 권한 없음.');
+    }
+
+    const diary = await this.prismaService.diary.findUnique({
+      where: {
+        id: diaryId,
+      },
+    });
+
+    const currentLabel = diary.labeled;
+
+    return await this.prismaService.diary.update({
+      where: {
+        id: diaryId,
+      },
+      data: {
+        labeled: !currentLabel,
+      },
+    });
+  }
 }
