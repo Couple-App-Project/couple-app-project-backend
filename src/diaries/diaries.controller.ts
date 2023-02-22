@@ -55,6 +55,7 @@ export class DiariesController {
       where: {
         calendarId,
       },
+      include: { calendar: true },
     });
   }
 
@@ -66,8 +67,11 @@ export class DiariesController {
       where: {
         OR: [{ userId: me.id }, { userId: you.id }],
       },
+      include: { calendar: true },
     });
   }
+
+  // TODO: 다이어리 상세 조회 include calendar
 
   @ApiOperation({ summary: '다이어리 수정' })
   @Put(':diaryId')
