@@ -19,7 +19,6 @@ import { CreateDiaryDto } from './dto/create-diary.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CouplesService } from '../couples/couples.service';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
-import { ErrorMessage } from '../calendars/constants/error-message';
 import { CalendarsService } from '../calendars/calendars.service';
 
 @UseGuards(JwtAuthGuard)
@@ -60,7 +59,7 @@ export class DiariesController {
     );
 
     if (!isOurCalendar) {
-      throw new ForbiddenException(ErrorMessage.FORBDDIEN_READ);
+      throw new ForbiddenException('해당 일정의 다이어리 조회 권한 없음.');
     }
 
     return await this.prismaService.diary.findMany({
@@ -93,7 +92,7 @@ export class DiariesController {
     const isOurDiary = await this.diariesService.isOurDiary(user, diaryId);
 
     if (!isOurDiary) {
-      throw new ForbiddenException(ErrorMessage.FORBDDIEN_UPDATE);
+      throw new ForbiddenException('해당 다이어리의 수정 권한 없음.');
     }
 
     return await this.prismaService.diary.update({
@@ -113,7 +112,7 @@ export class DiariesController {
     const isOurDiary = await this.diariesService.isOurDiary(user, diaryId);
 
     if (!isOurDiary) {
-      throw new ForbiddenException(ErrorMessage.FORBDDIEN_DELETE);
+      throw new ForbiddenException('해당 다이어리의 삭제 권한 없음.');
     }
 
     await this.prismaService.diary.delete({
