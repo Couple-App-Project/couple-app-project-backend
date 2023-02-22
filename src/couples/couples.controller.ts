@@ -66,14 +66,14 @@ export class CouplesController {
 
   @Post('info')
   @ApiOperation({
-    summary: '커플 정보 입력 및 수정',
+    summary: '커플 및 홈화면 정보 입력 및 수정',
     description: '모든 필드는 선택 입력 사항입니다.',
   })
   async addCoupleInformation(
     @currentUser() user: CurrentUserDto,
     @Body() addCoupleInformationDto: AddCoupleInformationDto,
   ) {
-    const { nickname, todayComment, ...coupleInformation } =
+    const { nickname, todayComment, backgroundColor, ...coupleInformation } =
       addCoupleInformationDto;
 
     const [me, you] = await this.couplesService.findMeAndYou(user.userId);
@@ -92,18 +92,25 @@ export class CouplesController {
       });
     }
 
+    if (backgroundColor) {
+      await this.prismaService.user.update({
+        where: { id: me.id },
+        data: { backgroundColor },
+      });
+    }
+
     if (coupleInformation) {
       await this.prismaService.couple.update({
         where: { id: me.coupleId },
         data: coupleInformation,
       });
 
-      return { message: '커플 정보 입력 및 수정 완료' };
+      return { message: '커플 및 홈화면 정보 입력 및 수정 완료' };
     }
   }
 
   @Get('info')
-  @ApiOperation({ summary: '홈화면 정보 조회' })
+  @ApiOperation({ summary: '커플 및 홈화면 정보 조회' })
   async getCoupleInformation(@currentUser() user: CurrentUserDto) {
     const [me, you] = await this.couplesService.findMeAndYou(user.userId);
 
