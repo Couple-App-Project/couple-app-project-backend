@@ -103,7 +103,7 @@ export class CouplesController {
   }
 
   @Get('info')
-  @ApiOperation({ summary: '커플 정보 조회' })
+  @ApiOperation({ summary: '홈화면 정보 조회' })
   async getCoupleInformation(@currentUser() user: CurrentUserDto) {
     const [me, you] = await this.couplesService.findMeAndYou(user.userId);
 
@@ -131,6 +131,7 @@ export class CouplesController {
       yourBirthday,
       myTodayComment,
       yourTodayComment,
+      backgroundColor: me.backgroundColor,
       ...coupleInformation,
     };
   }

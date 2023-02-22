@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id           Int        @id @default(autoincrement())
-  email        String     @unique
-  name         String
-  nickname     String?
-  birthDay     DateTime
-  coupleId     Int?
-  inviteCode   String?
-  password     String
-  refreshToken String?
-  gender       String
-  todayComment String     @default("")
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @default(now()) @updatedAt
-  couple       Couple?    @relation(fields: [coupleId], references: [id])
-  calendars    Calendar[]
-  diaries      Diary[]
+  id              Int        @id @default(autoincrement())
+  email           String     @unique
+  name            String
+  nickname        String?
+  birthDay        DateTime
+  coupleId        Int?
+  inviteCode      String?
+  password        String
+  refreshToken    String?
+  gender          String
+  todayComment    String     @default("")
+  backgroundColor String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @default(now()) @updatedAt
+  couple          Couple?    @relation(fields: [coupleId], references: [id])
+  calendars       Calendar[]
+  diaries         Diary[]
 }
 
 model Couple {
