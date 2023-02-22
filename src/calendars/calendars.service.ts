@@ -1,7 +1,7 @@
 import { UpdateCalendarDto } from './dtos/update-calendar.dto';
 import { CreateCalendarDto } from './dtos/create-calendar.dto';
 import { CurrentUserDto } from 'src/users/dto/current-user.dto';
-import { PrismaService } from './../prisma/prisma.service';
+import { PrismaService } from '../prisma/prisma.service';
 import {
   BadRequestException,
   ForbiddenException,
@@ -10,10 +10,14 @@ import {
 import { Calendar, Prisma, User } from '@prisma/client';
 import { GetCalendarQueryDto } from './dtos/get-calendar-query.dto';
 import { ErrorMessage } from './constants/error-message';
+import { CouplesService } from '../couples/couples.service';
 
 @Injectable()
 export class CalendarsService {
-  constructor(private readonly prismaService: PrismaService) {
+  constructor(
+    private readonly prismaService: PrismaService,
+    private readonly couplesService: CouplesService,
+  ) {
     console.log(new Date().toJSON());
   }
 
@@ -207,5 +211,15 @@ export class CalendarsService {
     }
 
     await this.prismaService.calendar.delete({ where: { id: calendarId } });
+  }
+
+  async isOurCalendar(user: CurrentUserDto, calendarId: number) {
+    const [me, you] = await this.couplesService.findMeAndYou(user.userId);
+    const calendar = await this.prismaService.calendar.findUnique({
+      where: {
+        id: calendarId,
+      },
+    });
+    return [me.id, you.id].includes(calendar.userId);
   }
 }

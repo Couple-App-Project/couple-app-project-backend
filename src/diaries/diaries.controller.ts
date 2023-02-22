@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   Param,
   ParseIntPipe,
@@ -18,6 +19,8 @@ import { CreateDiaryDto } from './dto/create-diary.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { CouplesService } from '../couples/couples.service';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
+import { ErrorMessage } from '../calendars/constants/error-message';
+import { CalendarsService } from '../calendars/calendars.service';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -28,6 +31,7 @@ export class DiariesController {
     private readonly diariesService: DiariesService,
     private readonly prismaService: PrismaService,
     private readonly couplesService: CouplesService,
+    private readonly calendarsService: CalendarsService,
   ) {}
 
   @ApiOperation({ summary: '다이어리 생성' })
@@ -50,7 +54,15 @@ export class DiariesController {
     @currentUser() user: CurrentUserDto,
     @Param('calendarId', ParseIntPipe) calendarId: number,
   ) {
-    // TODO: 본인 또는 상대방의 calendar의 경우에만 조회 가능
+    const isOurCalendar = await this.calendarsService.isOurCalendar(
+      user,
+      calendarId,
+    );
+
+    if (!isOurCalendar) {
+      throw new ForbiddenException(ErrorMessage.FORBDDIEN_READ);
+    }
+
     return await this.prismaService.diary.findMany({
       where: {
         calendarId,
@@ -59,7 +71,7 @@ export class DiariesController {
     });
   }
 
-  @ApiOperation({ summary: '전체 다이어리 조회' })
+  @ApiOperation({ summary: '다이어리 조회' })
   @Get()
   async getDiaries(@currentUser() user: CurrentUserDto) {
     const [me, you] = await this.couplesService.findMeAndYou(user.userId);
@@ -71,8 +83,6 @@ export class DiariesController {
     });
   }
 
-  // TODO: 다이어리 상세 조회 include calendar
-
   @ApiOperation({ summary: '다이어리 수정' })
   @Put(':diaryId')
   async updateDiary(
@@ -80,7 +90,12 @@ export class DiariesController {
     @Param('diaryId', ParseIntPipe) diaryId: number,
     @Body() updateDiaryDto: UpdateDiaryDto,
   ) {
-    // TODO: 본인 또는 상대방의 diary의 경우에만 수정 가능
+    const isOurDiary = await this.diariesService.isOurDiary(user, diaryId);
+
+    if (!isOurDiary) {
+      throw new ForbiddenException(ErrorMessage.FORBDDIEN_UPDATE);
+    }
+
     return await this.prismaService.diary.update({
       where: {
         id: diaryId,
@@ -95,7 +110,12 @@ export class DiariesController {
     @currentUser() user: CurrentUserDto,
     @Param('diaryId', ParseIntPipe) diaryId: number,
   ) {
-    // TODO: 본인 또는 상대방의 diary의 경우에만 삭제 가능
+    const isOurDiary = await this.diariesService.isOurDiary(user, diaryId);
+
+    if (!isOurDiary) {
+      throw new ForbiddenException(ErrorMessage.FORBDDIEN_DELETE);
+    }
+
     await this.prismaService.diary.delete({
       where: {
         id: diaryId,
