@@ -4,7 +4,6 @@ import {
   Controller,
   Get,
   Post,
-  Res,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -26,7 +25,6 @@ import { CurrentUserDto } from '../users/dto/current-user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Multer } from 'multer';
 import { ImagesService } from '../images/images.service';
-import { Response } from 'express';
 
 @ApiTags('커플 및 정보 관리')
 @UseGuards(JwtAuthGuard)
@@ -184,13 +182,8 @@ export class CouplesController {
   }
 
   @Get('background-image')
-  @ApiOperation({ summary: '배경 이미지 다운로드' })
-  async getBackgroundImage(
-    @currentUser() user: CurrentUserDto,
-    @Res() res: Response,
-  ) {
-    const imageBuffer = await this.imagesService.getBackgroundImage(user);
-    res.set('Content-Type', 'image/jpeg');
-    res.send(imageBuffer);
+  @ApiOperation({ summary: '배경 이미지 다운로드 url' })
+  async getBackgroundImage(@currentUser() user: CurrentUserDto) {
+    return await this.imagesService.getBackgroundImage(user);
   }
 }

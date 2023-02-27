@@ -1,13 +1,15 @@
 import { Injectable } from '@nestjs/common';
 import {
+  DeleteObjectsCommand,
   GetObjectCommand,
+  ListObjectsV2Command,
   PutObjectCommand,
   S3Client,
 } from '@aws-sdk/client-s3';
 import { Multer } from 'multer';
 import { CurrentUserDto } from '../users/dto/current-user.dto';
-import { Readable } from 'stream';
 import { ConfigService } from '@nestjs/config';
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
 @Injectable()
 export class ImagesService {
@@ -23,34 +25,111 @@ export class ImagesService {
   private bucketName = this.configService.get('AWS_S3_BUCKET');
 
   async uploadBackgroundImage(file: Multer.File, user: CurrentUserDto) {
-    const fileKey = `users/${user.userId}/background-image`;
-    const params = {
-      Bucket: this.bucketName,
-      Key: fileKey,
-      Body: file.buffer,
-    };
-
     // 5MB limit
     if (file.size > 5242880) {
       throw new Error('파일 용량 초과.');
     }
 
-    const command = new PutObjectCommand(params);
+    await this.deleteBackgroundImage(user);
+
+    const fileKey = `users/${user.userId}/background-image/${Date.now()}`;
+
+    const command = new PutObjectCommand({
+      Bucket: this.bucketName,
+      Key: fileKey,
+      Body: file.buffer,
+    });
     await this.s3.send(command);
   }
 
-  async getBackgroundImage(user: CurrentUserDto) {
-    const command = new GetObjectCommand({
+  async uploadDiaryImages(files: Multer.File[], diaryId: number) {
+    if (files.some((file) => file.size > 5242880)) {
+      throw new Error('용량을 초과하는 파일이 있음.');
+    }
+
+    await this.deleteImagesOfDiary(diaryId);
+
+    const folderName = `diaries/${diaryId}/`;
+
+    for (const file of files) {
+      const fileKey = `${folderName}${Date.now()}`;
+
+      const command = new PutObjectCommand({
+        Bucket: this.bucketName,
+        Key: fileKey,
+        Body: file.buffer,
+      });
+
+      await this.s3.send(command);
+    }
+  }
+
+  async getFolder(folderName: string) {
+    const listCommand = new ListObjectsV2Command({
       Bucket: this.bucketName,
-      Key: `users/${user.userId}/background-image`,
+      Prefix: folderName,
     });
 
-    const response = await this.s3.send(command);
-    const stream = response.Body as Readable;
-    const chunks = [];
-    for await (const chunk of stream) {
-      chunks.push(chunk);
+    const listResponse = await this.s3.send(listCommand);
+    const contents = listResponse.Contents || [];
+
+    const getCommands = contents.map((content) => {
+      return new GetObjectCommand({
+        Bucket: this.bucketName,
+        Key: content.Key,
+      });
+    });
+
+    return await Promise.all(
+      getCommands.map(async (getCommand) => {
+        return await getSignedUrl(this.s3, getCommand, {
+          expiresIn: 60 * 60,
+        });
+      }),
+    );
+  }
+
+  async getBackgroundImage(user: CurrentUserDto) {
+    const folderName = `users/${user.userId}/background-image/`;
+    return await this.getFolder(folderName);
+  }
+
+  async getDiaryImages(diaryId: number) {
+    const folderName = `diaries/${diaryId}/`;
+    return await this.getFolder(folderName);
+  }
+
+  async deleteFolder(folderName: string) {
+    const listObjectsResponse = await this.s3.send(
+      new ListObjectsV2Command({
+        Bucket: this.bucketName,
+        Prefix: folderName,
+      }),
+    );
+
+    const contents = listObjectsResponse.Contents;
+
+    if (!contents) {
+      return;
     }
-    return Buffer.concat(chunks);
+
+    const objectsToDelete = contents.map(({ Key }) => ({ Key }));
+
+    await this.s3.send(
+      new DeleteObjectsCommand({
+        Bucket: this.bucketName,
+        Delete: { Objects: objectsToDelete },
+      }),
+    );
+  }
+
+  async deleteImagesOfDiary(diaryId: number) {
+    const folderName = `diaries/${diaryId}/`;
+    await this.deleteFolder(folderName);
+  }
+
+  async deleteBackgroundImage(user: CurrentUserDto) {
+    const folderName = `users/${user.userId}/background-image/`;
+    await this.deleteFolder(folderName);
   }
 }

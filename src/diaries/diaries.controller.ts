@@ -8,10 +8,17 @@ import {
   ParseIntPipe,
   Post,
   Put,
+  UploadedFiles,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiTags,
+} from '@nestjs/swagger';
 import { DiariesService } from './diaries.service';
 import { currentUser } from '../decorators/user.decorator';
 import { CurrentUserDto } from '../users/dto/current-user.dto';
@@ -20,6 +27,9 @@ import { PrismaService } from '../prisma/prisma.service';
 import { CouplesService } from '../couples/couples.service';
 import { UpdateDiaryDto } from './dto/update-diary.dto';
 import { CalendarsService } from '../calendars/calendars.service';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { Multer } from 'multer';
+import { ImagesService } from '../images/images.service';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -31,20 +41,35 @@ export class DiariesController {
     private readonly prismaService: PrismaService,
     private readonly couplesService: CouplesService,
     private readonly calendarsService: CalendarsService,
+    private readonly imagesService: ImagesService,
   ) {}
 
   @ApiOperation({ summary: '다이어리 생성' })
   @Post()
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files'))
   async createDiary(
     @currentUser() user: CurrentUserDto,
     @Body() createDiaryDto: CreateDiaryDto,
+    @UploadedFiles() files?: Multer.File[],
   ) {
-    return await this.prismaService.diary.create({
+    const createdDiary = await this.prismaService.diary.create({
       data: {
         userId: user.userId,
-        ...createDiaryDto,
+        calendarId: Number(createDiaryDto.calendarId),
+        title: createDiaryDto.title,
+        content: createDiaryDto.content,
       },
     });
+
+    if (files) {
+      await this.imagesService.uploadDiaryImages(files, createdDiary.id);
+    }
+
+    return {
+      message: '다이어리 생성 및 이미지 업로드 완료.',
+      createdDiary,
+    };
   }
 
   @ApiOperation({ summary: '해당 일정의 다이어리 조회' })
@@ -62,32 +87,59 @@ export class DiariesController {
       throw new ForbiddenException('해당 일정의 다이어리 조회 권한 없음.');
     }
 
-    return await this.prismaService.diary.findMany({
+    const diaries = await this.prismaService.diary.findMany({
       where: {
         calendarId,
       },
       include: { calendar: true },
     });
+
+    return await Promise.all(
+      diaries.map(async (diary) => {
+        const images = await this.imagesService.getDiaryImages(diary.id);
+        return {
+          ...diary,
+          images,
+        };
+      }),
+    );
   }
 
   @ApiOperation({ summary: '다이어리 조회' })
   @Get()
   async getDiaries(@currentUser() user: CurrentUserDto) {
     const [me, you] = await this.couplesService.findMeAndYou(user.userId);
-    return await this.prismaService.diary.findMany({
+    const diaries = await this.prismaService.diary.findMany({
       where: {
         OR: [{ userId: me.id }, { userId: you.id }],
       },
       include: { calendar: true },
     });
+
+    return await Promise.all(
+      diaries.map(async (diary) => {
+        const images = await this.imagesService.getDiaryImages(diary.id);
+        return {
+          ...diary,
+          images,
+        };
+      }),
+    );
   }
 
-  @ApiOperation({ summary: '다이어리 수정' })
+  @ApiOperation({
+    summary: '다이어리 수정',
+    description:
+      '다이어리 수정 시 기존에 이미 있던 이미지도 다시 업로드해야 하는 덮어 쓰기 방식이다.',
+  })
   @Put(':diaryId')
+  @ApiConsumes('multipart/form-data')
+  @UseInterceptors(FilesInterceptor('files'))
   async updateDiary(
     @currentUser() user: CurrentUserDto,
     @Param('diaryId', ParseIntPipe) diaryId: number,
     @Body() updateDiaryDto: UpdateDiaryDto,
+    @UploadedFiles() files?: Multer.File[],
   ) {
     const isOurDiary = await this.diariesService.isOurDiary(user, diaryId);
 
@@ -95,15 +147,30 @@ export class DiariesController {
       throw new ForbiddenException('해당 다이어리의 수정 권한 없음.');
     }
 
-    return await this.prismaService.diary.update({
+    const updatedDiary = await this.prismaService.diary.update({
       where: {
         id: diaryId,
       },
-      data: updateDiaryDto,
+      data: {
+        title: updateDiaryDto.title,
+        content: updateDiaryDto.content,
+      },
     });
+
+    if (files) {
+      await this.imagesService.uploadDiaryImages(files, diaryId);
+    }
+
+    return {
+      message: '다이어리 업데이트 및 이미지 업로드 완료.',
+      updatedDiary,
+    };
   }
 
-  @ApiOperation({ summary: '다이어리 삭제' })
+  @ApiOperation({
+    summary: '다이어리 삭제',
+    description: '다이어리가 포함하는 이미지도 함께 삭제한다.',
+  })
   @Delete(':diaryId')
   async deleteDiary(
     @currentUser() user: CurrentUserDto,
@@ -120,7 +187,10 @@ export class DiariesController {
         id: diaryId,
       },
     });
-    return { message: '다이어리 삭제 완료.' };
+
+    await this.imagesService.deleteImagesOfDiary(diaryId);
+
+    return { message: '다이어리 및 저장된 이미지 삭제 완료.' };
   }
 
   @ApiOperation({ summary: '다이어리 라벨 ON/OFF' })
@@ -143,7 +213,7 @@ export class DiariesController {
 
     const currentLabel = diary.labeled;
 
-    return await this.prismaService.diary.update({
+    return this.prismaService.diary.update({
       where: {
         id: diaryId,
       },

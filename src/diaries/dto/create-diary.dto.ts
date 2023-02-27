@@ -1,4 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
+import { Multer } from 'multer';
+import { Optional } from '@nestjs/common';
 
 export class CreateDiaryDto {
   @ApiProperty({ description: 'Calendar id', example: 1 })
@@ -7,6 +9,13 @@ export class CreateDiaryDto {
   title: string;
   @ApiProperty({ description: '다이어리 내용', example: '다이어리 내용' })
   content: string;
-  @ApiProperty({ description: '이미지 urls', example: [] })
-  images: string[];
+  @ApiProperty({
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
+  })
+  @Optional()
+  files: Multer.File[];
 }
