@@ -7,7 +7,6 @@ import {
   S3Client,
 } from '@aws-sdk/client-s3';
 import { Multer } from 'multer';
-import { CurrentUserDto } from '../users/dto/current-user.dto';
 import { ConfigService } from '@nestjs/config';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 
@@ -24,15 +23,15 @@ export class ImagesService {
   });
   private bucketName = this.configService.get('AWS_S3_BUCKET');
 
-  async uploadBackgroundImage(file: Multer.File, user: CurrentUserDto) {
+  async uploadBackgroundImage(file: Multer.File, coupleId: number) {
     // 5MB limit
     if (file.size > 5242880) {
       throw new Error('파일 용량 초과.');
     }
 
-    await this.deleteBackgroundImage(user);
+    await this.deleteBackgroundImage(coupleId);
 
-    const fileKey = `users/${user.userId}/background-image/${Date.now()}`;
+    const fileKey = `couples/${coupleId}/background-image/${Date.now()}`;
 
     const command = new PutObjectCommand({
       Bucket: this.bucketName,
@@ -89,8 +88,8 @@ export class ImagesService {
     );
   }
 
-  async getBackgroundImage(user: CurrentUserDto) {
-    const folderName = `users/${user.userId}/background-image/`;
+  async getBackgroundImage(coupleId: number) {
+    const folderName = `couples/${coupleId}/background-image/`;
     return await this.getFolder(folderName);
   }
 
@@ -128,8 +127,8 @@ export class ImagesService {
     await this.deleteFolder(folderName);
   }
 
-  async deleteBackgroundImage(user: CurrentUserDto) {
-    const folderName = `users/${user.userId}/background-image/`;
+  async deleteBackgroundImage(coupleId: number) {
+    const folderName = `couples/${coupleId}/background-image/`;
     await this.deleteFolder(folderName);
   }
 }

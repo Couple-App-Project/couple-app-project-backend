@@ -177,13 +177,15 @@ export class CouplesController {
     @currentUser() user: CurrentUserDto,
     @UploadedFile() file: Multer.File,
   ) {
-    await this.imagesService.uploadBackgroundImage(file, user);
+    const coupleId = await this.couplesService.getCoupleId(user);
+    await this.imagesService.uploadBackgroundImage(file, coupleId);
     return { message: '배경 이미지 등록 완료.' };
   }
 
   @Get('background-image')
   @ApiOperation({ summary: '배경 이미지 다운로드 url' })
   async getBackgroundImage(@currentUser() user: CurrentUserDto) {
-    return await this.imagesService.getBackgroundImage(user);
+    const coupleId = await this.couplesService.getCoupleId(user);
+    return await this.imagesService.getBackgroundImage(coupleId);
   }
 }
