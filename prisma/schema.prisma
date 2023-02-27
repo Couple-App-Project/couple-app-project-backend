@@ -59,7 +59,6 @@ model Diary {
   calendarId Int
   title      String
   content    String
-  images     String[]
   labeled    Boolean  @default(false)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
