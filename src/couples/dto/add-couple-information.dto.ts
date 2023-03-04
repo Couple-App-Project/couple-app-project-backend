@@ -17,4 +17,8 @@ export class AddCoupleInformationDto {
   @ApiProperty({ example: '오늘도 사랑해' })
   @IsOptional()
   todayComment: string;
+
+  @ApiProperty({ example: '분홍색' })
+  @IsOptional()
+  backgroundColor: string;
 }

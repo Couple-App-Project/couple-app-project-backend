@@ -1,12 +1,4 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Param,
-  Patch,
-  Post,
-} from '@nestjs/common';
+import { Body, Controller, Post } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -60,8 +52,6 @@ export class UsersController {
   }
 
   @Cron('0 0 0 * * *')
-  @Patch('todaycomment')
-  @ApiOperation({ summary: '오늘의 한마디 초기화(0시마다 실행)' })
   async resetTodayComments() {
     await this.prismaService.user.updateMany({
       data: { todayComment: '' },
