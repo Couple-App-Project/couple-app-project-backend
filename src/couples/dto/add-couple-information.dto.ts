@@ -4,7 +4,7 @@ import { IsOptional } from 'class-validator';
 export class AddCoupleInformationDto {
   @ApiProperty({ example: '2022-09-25' })
   @IsOptional()
-  anniversary = '';
+  anniversary: string;
 
   @ApiProperty({ example: '짐승' })
   @IsOptional()
