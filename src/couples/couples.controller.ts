@@ -126,6 +126,8 @@ export class CouplesController {
   async getCoupleInformation(@currentUser() user: CurrentUserDto) {
     const [me, you] = await this.couplesService.findMeAndYou(user.userId);
 
+    const myEmail = me.email;
+
     // 나와 상대방의 닉네임을 추출 (없을 경우 이름)
     const myNickname = me.nickname || me.name;
     const yourNickname = you.nickname || you.name;
@@ -144,6 +146,7 @@ export class CouplesController {
 
     // 묶어서 return
     return {
+      myEmail,
       myNickname,
       yourNickname,
       myBirthday,
