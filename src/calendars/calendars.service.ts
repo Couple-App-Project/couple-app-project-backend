@@ -1,3 +1,4 @@
+import { CoupleCalendarUtil } from '../users/util/couple-calendar.util';
 import { UpdateCalendarDto } from './dtos/update-calendar.dto';
 import { CreateCalendarDto } from './dtos/create-calendar.dto';
 import { CurrentUserDto } from 'src/users/dto/current-user.dto';
@@ -11,15 +12,15 @@ import { Calendar, Prisma, User } from '@prisma/client';
 import { GetCalendarQueryDto } from './dtos/get-calendar-query.dto';
 import { ErrorMessage } from './constants/error-message';
 import { CouplesService } from '../couples/couples.service';
+import { GetOncomingCalendarQueryDto } from './dtos/get-oncoming-calendar-query.dto';
+import { LocalDate } from 'js-joda';
 
 @Injectable()
 export class CalendarsService {
   constructor(
     private readonly prismaService: PrismaService,
     private readonly couplesService: CouplesService,
-  ) {
-    console.log(new Date().toJSON());
-  }
+  ) {}
 
   async getCalendars(
     user: CurrentUserDto,
@@ -40,7 +41,7 @@ export class CalendarsService {
       ? existCouple.users.map((user: User) => user.id)
       : [currentUserWithCouple.id];
 
-    return await this.prismaService.calendar.findMany({
+    const existCalendars = await this.prismaService.calendar.findMany({
       where: {
         userId: { in: currentCoupleUserIds },
         startDate: queryOption.hasMonth()
@@ -57,6 +58,76 @@ export class CalendarsService {
       orderBy: [{ startDate: 'asc' }, { startTime: 'asc' }],
       include: { user: true },
     });
+
+    const coupleCalendarUtil = new CoupleCalendarUtil({
+      currentUserId: user.userId,
+      couple: existCouple,
+      startDate: queryOption.getStartDate(),
+      endDate: queryOption.getEndDate(),
+    });
+
+    const birthdayCalendars = coupleCalendarUtil.getBirthdayCalendar();
+    const anniversaryCalendars = coupleCalendarUtil.getAnniversaryCalendars();
+
+    existCalendars.push(...birthdayCalendars, ...anniversaryCalendars);
+
+    return existCalendars.sort(
+      (a, b) =>
+        new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+    );
+  }
+
+  async getOncomingCalendars(
+    user: CurrentUserDto,
+    queryOption: GetOncomingCalendarQueryDto,
+  ): Promise<(Calendar & { user: User })[]> {
+    const currentUserWithCouple = await this.prismaService.user.findFirst({
+      where: { id: user.userId },
+      include: { couple: { include: { users: true } } },
+    });
+
+    if (!currentUserWithCouple) {
+      throw new BadRequestException('잘못된 요청입니다.');
+    }
+
+    const existCouple = currentUserWithCouple.couple;
+
+    const currentCoupleUserIds: number[] = existCouple
+      ? existCouple.users.map((user: User) => user.id)
+      : [currentUserWithCouple.id];
+
+    const todayLocalDate = LocalDate.now();
+    const today = todayLocalDate.toString();
+    const nextYearToday = todayLocalDate.plusYears(1).toString();
+
+    const existCalendars = await this.prismaService.calendar.findMany({
+      where: {
+        userId: { in: currentCoupleUserIds },
+        startDate: { gte: today },
+      },
+      orderBy: [{ startDate: 'asc' }, { startTime: 'asc' }],
+      include: { user: true },
+      take: queryOption.getLimit(),
+    });
+
+    const coupleCalendarUtil = new CoupleCalendarUtil({
+      currentUserId: user.userId,
+      couple: existCouple,
+      startDate: today,
+      endDate: nextYearToday,
+    });
+
+    const birthdayCalendars = coupleCalendarUtil.getBirthdayCalendar();
+    const anniversaryCalendars = coupleCalendarUtil.getAnniversaryCalendars();
+
+    existCalendars.push(...birthdayCalendars, ...anniversaryCalendars);
+
+    return existCalendars
+      .sort(
+        (a, b) =>
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime(),
+      )
+      .slice(0, queryOption.getLimit());
   }
 
   async getCalendar(
