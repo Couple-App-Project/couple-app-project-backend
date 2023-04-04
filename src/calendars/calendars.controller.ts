@@ -30,6 +30,7 @@ import { GetCalendarQueryDto } from './dtos/get-calendar-query.dto';
 import { ApiCustomResponseByDto } from 'src/decorators/api-ok-response/custom-response.decorator';
 import { UpdateCalendarDto } from './dtos/update-calendar.dto';
 import { NewCalendarDto } from './dtos/new-calendar.dto';
+import { GetOncomingCalendarQueryDto } from './dtos/get-oncoming-calendar-query.dto';
 
 @UseGuards(JwtAuthGuard)
 @ApiBearerAuth()
@@ -47,6 +48,24 @@ export class CalendarsController {
   ): Promise<CalendarDto[]> {
     const calendars: (Calendar & { user: User })[] =
       await this.calendarsService.getCalendars(user, getCalendarQueryDto);
+
+    return calendars.map(
+      (result: Calendar & { user: User }) => new CalendarDto(result),
+    );
+  }
+
+  @ApiCustomArrayResponseByDto(CalendarDto)
+  @ApiOperation({ summary: '다가오는 캘린더 조회' })
+  @Get()
+  async getOncomingCalendars(
+    @currentUser() user: CurrentUserDto,
+    @Query() getOncomingCalendarQueryDto: GetOncomingCalendarQueryDto,
+  ): Promise<CalendarDto[]> {
+    const calendars: (Calendar & { user: User })[] =
+      await this.calendarsService.getOncomingCalendars(
+        user,
+        getOncomingCalendarQueryDto,
+      );
 
     return calendars.map(
       (result: Calendar & { user: User }) => new CalendarDto(result),
