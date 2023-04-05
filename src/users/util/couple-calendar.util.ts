@@ -49,8 +49,11 @@ export class CoupleCalendarUtil {
     if (!this.couple) return [];
 
     const calendars: (Calendar & { user: User })[] = [];
+    const currentNth: number = Math.floor(
+      DateTimeUtil.getPeriodDays(this.couple.anniversary, this.startDate) / 100,
+    );
 
-    for (let nth = 1; nth <= 10; nth++) {
+    for (let nth = currentNth; nth <= currentNth + 5; nth++) {
       const anniversaryDate = this.getAnniversaryDate(nth);
 
       if (this.isIncludeAnniversaryDate(anniversaryDate)) {
