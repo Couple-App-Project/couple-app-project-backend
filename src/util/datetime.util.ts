@@ -60,4 +60,15 @@ export class DateTimeUtil {
 
     return LocalDateTime.parse(strDate, DateTimeUtil.DATETIME_FORM);
   }
+
+  static getPeriodDays(startDate: string, endDate: string): number {
+    if (!startDate || !endDate) {
+      return 0;
+    }
+
+    const startDateLocalDate = DateTimeUtil.toLocalDateBy(startDate);
+    const endDateLocalDate = DateTimeUtil.toLocalDateBy(endDate);
+
+    return endDateLocalDate.toEpochDay() - startDateLocalDate.toEpochDay() + 1;
+  }
 }
