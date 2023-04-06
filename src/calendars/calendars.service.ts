@@ -117,6 +117,8 @@ export class CalendarsService {
       take: queryOption.getLimit(),
     });
 
+    if (!existCouple) return existCalendars;
+
     const nextYearToday = todayLocalDate.plusYears(1).toString();
     const coupleCalendarUtil = new CoupleCalendarUtil({
       currentUserId: user.userId,
