@@ -3,7 +3,7 @@ import { IsInt, IsOptional } from 'class-validator';
 import { ParseIntTransform } from 'src/decorators/int-transform.decorator';
 
 export class GetOncomingCalendarQueryDto {
-  @ApiProperty()
+  @ApiProperty({ description: '조회할 개수 (생략 시 5개)', required: false })
   @IsOptional()
   @ParseIntTransform()
   @IsInt()

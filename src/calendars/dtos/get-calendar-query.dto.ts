@@ -37,6 +37,10 @@ export class GetCalendarQueryDto {
     return this.keyword ? true : false;
   }
 
+  public isDateFilter(): boolean {
+    return this.type === '데이트' ? true : false;
+  }
+
   public getStartDate() {
     this.#firstDate = DateStringGenerator.getFirstDayByYYMM(this.month);
     return this.#firstDate;

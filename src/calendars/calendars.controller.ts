@@ -56,7 +56,7 @@ export class CalendarsController {
 
   @ApiCustomArrayResponseByDto(CalendarDto)
   @ApiOperation({ summary: '다가오는 캘린더 조회' })
-  @Get()
+  @Get('/oncoming')
   async getOncomingCalendars(
     @currentUser() user: CurrentUserDto,
     @Query() getOncomingCalendarQueryDto: GetOncomingCalendarQueryDto,
