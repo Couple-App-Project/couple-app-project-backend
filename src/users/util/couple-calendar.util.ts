@@ -23,10 +23,14 @@ export class CoupleCalendarUtil {
     this.couple = couple;
     this.startDate = startDate;
     this.endDate = endDate;
-    this.currentUser = couple.users.find(
-      (user: User) => user.id === currentUserId,
-    );
-    this.partner = couple.users.find((user: User) => user.id !== currentUserId);
+    if (couple) {
+      this.currentUser = couple.users.find(
+        (user: User) => user.id === currentUserId,
+      );
+      this.partner = couple.users.find(
+        (user: User) => user.id !== currentUserId,
+      );
+    }
   }
 
   getBirthdayCalendar(): (Calendar & { user: User })[] {
@@ -52,7 +56,7 @@ export class CoupleCalendarUtil {
   }
 
   getAnniversaryCalendars(): (Calendar & { user: User })[] {
-    if (!this.couple.anniversary) return [];
+    if (!this.couple?.anniversary) return [];
 
     const calendars: (Calendar & { user: User })[] = [];
     const currentNth: number = Math.floor(
@@ -86,7 +90,8 @@ export class CoupleCalendarUtil {
     const endLocalDate = DateTimeUtil.toLocalDateBy(this.endDate);
 
     const userBirthdayThisYear =
-      startLocalDate.monthValue() > endLocalDate.monthValue()
+      startLocalDate.year() < endLocalDate.year() &&
+      userBirthDay.isAfter(startLocalDate)
         ? LocalDate.of(
             endLocalDate.year(),
             userBirthDay.monthValue(),
@@ -150,7 +155,8 @@ export class CoupleCalendarUtil {
     const endLocalDate = DateTimeUtil.toLocalDateBy(this.endDate);
 
     const thisBirthDay =
-      startLocalDate.monthValue() > endLocalDate.monthValue()
+      startLocalDate.year() < endLocalDate.year() &&
+      userBirthDay.isAfter(startLocalDate)
         ? LocalDate.of(
             endLocalDate.year(),
             userBirthDay.monthValue(),
