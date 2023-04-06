@@ -59,7 +59,11 @@ export class CalendarsService {
       include: { user: true },
     });
 
-    if (queryOption.isDateFilter() || queryOption.hasKeyword()) {
+    if (
+      queryOption.isDateFilter() ||
+      queryOption.hasKeyword() ||
+      !queryOption.hasMonth()
+    ) {
       return existCalendars;
     }
 

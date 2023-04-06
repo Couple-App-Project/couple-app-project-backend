@@ -40,7 +40,7 @@ export class CoupleCalendarUtil {
         calendars.push(
           this.createCalendar({
             user,
-            type: '생일',
+            type: '기념일',
             title: `${user.nickname || user.name}의 생일`,
             date: userBirthDay,
           }),
@@ -58,6 +58,7 @@ export class CoupleCalendarUtil {
     const currentNth: number = Math.floor(
       DateTimeUtil.getPeriodDays(this.couple.anniversary, this.startDate) / 100,
     );
+    if (currentNth < 0) return [];
 
     for (let nth = currentNth; nth <= currentNth + 5; nth++) {
       const anniversaryDate = this.getAnniversaryDate(nth);
@@ -122,7 +123,7 @@ export class CoupleCalendarUtil {
     date,
   }: {
     user: User;
-    type: '생일' | '기념일';
+    type: '기념일';
     title: string;
     date: string;
   }): Calendar & { user: User } {
