@@ -36,8 +36,14 @@ export class CoupleCalendarUtil {
 
     this.couple.users.map((user: User) => {
       if (this.isIncludeBirthDay(user)) {
+        const userBirthDay = this.getThisBirthDay(user);
         calendars.push(
-          this.createCalendar(user, '생일', `${user.nickname}의 생일`),
+          this.createCalendar({
+            user,
+            type: '생일',
+            title: `${user.nickname || user.name}의 생일`,
+            date: userBirthDay,
+          }),
         );
       }
     });
@@ -46,7 +52,7 @@ export class CoupleCalendarUtil {
   }
 
   getAnniversaryCalendars(): (Calendar & { user: User })[] {
-    if (!this.couple) return [];
+    if (!this.couple.anniversary) return [];
 
     const calendars: (Calendar & { user: User })[] = [];
     const currentNth: number = Math.floor(
@@ -58,11 +64,14 @@ export class CoupleCalendarUtil {
 
       if (this.isIncludeAnniversaryDate(anniversaryDate)) {
         calendars.push(
-          this.createCalendar(
-            this.currentUser,
-            '기념일',
-            `${this.partner.nickname}와(과) 함께한 ${100 * nth}일`,
-          ),
+          this.createCalendar({
+            user: this.currentUser,
+            type: '기념일',
+            title: `${
+              this.partner.nickname || this.partner.name
+            }와(과) 함께한 ${100 * nth}일`,
+            date: anniversaryDate,
+          }),
         );
       }
     }
@@ -75,28 +84,23 @@ export class CoupleCalendarUtil {
     const startLocalDate = DateTimeUtil.toLocalDateBy(this.startDate);
     const endLocalDate = DateTimeUtil.toLocalDateBy(this.endDate);
 
-    const startOfYear = LocalDate.of(startLocalDate.year(), 1, 1);
-    const endOfYear = LocalDate.of(endLocalDate.year(), 12, 31);
+    const userBirthdayThisYear =
+      startLocalDate.monthValue() > endLocalDate.monthValue()
+        ? LocalDate.of(
+            endLocalDate.year(),
+            userBirthDay.monthValue(),
+            userBirthDay.dayOfMonth(),
+          )
+        : LocalDate.of(
+            startLocalDate.year(),
+            userBirthDay.monthValue(),
+            userBirthDay.dayOfMonth(),
+          );
 
-    const userBirthdayThisYear = LocalDate.of(
-      startLocalDate.year(),
-      userBirthDay.monthValue(),
-      userBirthDay.dayOfMonth(),
-    );
-
-    const userBirthdayIsInRange =
+    return (
       userBirthdayThisYear.isAfter(startLocalDate) &&
-      userBirthdayThisYear.isBefore(endLocalDate);
-
-    const userBirthdayIsInNextRange =
-      userBirthDay.isBefore(startOfYear) &&
-      LocalDate.of(
-        endLocalDate.year(),
-        userBirthDay.monthValue(),
-        userBirthDay.dayOfMonth(),
-      ).isBefore(endOfYear);
-
-    return userBirthdayIsInRange || userBirthdayIsInNextRange;
+      userBirthdayThisYear.isBefore(endLocalDate)
+    );
   }
 
   private isIncludeAnniversaryDate(anniversaryDate: string): boolean {
@@ -111,19 +115,24 @@ export class CoupleCalendarUtil {
     );
   }
 
-  private createCalendar(
-    user: User,
-    type: '생일' | '기념일',
-    title: string,
-  ): Calendar & { user: User } {
-    const thisBirthDay = this.getThisBirthDay(user);
+  private createCalendar({
+    user,
+    type,
+    title,
+    date,
+  }: {
+    user: User;
+    type: '생일' | '기념일';
+    title: string;
+    date: string;
+  }): Calendar & { user: User } {
     return {
       id: 0,
       userId: user.id,
       type,
       title,
-      startDate: thisBirthDay,
-      endDate: thisBirthDay,
+      startDate: date,
+      endDate: date,
       startTime: null,
       endTime: null,
       content: null,

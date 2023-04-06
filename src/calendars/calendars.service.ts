@@ -59,6 +59,10 @@ export class CalendarsService {
       include: { user: true },
     });
 
+    if (queryOption.isDateFilter() || queryOption.hasKeyword()) {
+      return existCalendars;
+    }
+
     const coupleCalendarUtil = new CoupleCalendarUtil({
       currentUserId: user.userId,
       couple: existCouple,
@@ -98,7 +102,6 @@ export class CalendarsService {
 
     const todayLocalDate = LocalDate.now();
     const today = todayLocalDate.toString();
-    const nextYearToday = todayLocalDate.plusYears(1).toString();
 
     const existCalendars = await this.prismaService.calendar.findMany({
       where: {
@@ -110,6 +113,7 @@ export class CalendarsService {
       take: queryOption.getLimit(),
     });
 
+    const nextYearToday = todayLocalDate.plusYears(1).toString();
     const coupleCalendarUtil = new CoupleCalendarUtil({
       currentUserId: user.userId,
       couple: existCouple,
