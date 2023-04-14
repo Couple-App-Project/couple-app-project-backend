@@ -80,12 +80,16 @@ export class AuthController {
   @ApiOperation({ summary: '로그아웃' })
   @Get('logout')
   @ApiBearerAuth()
-  async logout(@currentUser() user: CurrentUserDto) {
+  async logout(@currentUser() user: CurrentUserDto, @Response() res) {
     await this.prismaService.user.update({
       where: { id: user.userId },
       data: { refreshToken: null },
     });
-    return { message: '로그아웃 되었습니다.' };
+
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+
+    res.send({ message: '로그아웃 되었습니다.' });
   }
 
   @ApiOperation({ summary: '이메일 중복 확인' })
