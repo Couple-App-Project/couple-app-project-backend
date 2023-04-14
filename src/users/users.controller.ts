@@ -1,4 +1,11 @@
-import { Body, Controller, Delete, Post, UseGuards } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Delete,
+  Post,
+  Response,
+  UseGuards,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
@@ -21,7 +28,7 @@ export class UsersController {
 
   @Post()
   @ApiOperation({ summary: '회원 가입' })
-  async create(@Body() createUserDto: CreateUserDto) {
+  async create(@Body() createUserDto: CreateUserDto, @Response() res) {
     await this.usersService.create(createUserDto);
     const newUser = await this.prismaService.user.findUnique({
       where: { email: createUserDto.email },
@@ -47,11 +54,10 @@ export class UsersController {
       data: { refreshToken },
     });
 
-    return {
-      message: '회원 가입 완료!',
-      accessToken,
-      refreshToken,
-    };
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+    res.send({ message: '회원 가입 완료!' });
   }
 
   @UseGuards(JwtAuthGuard)

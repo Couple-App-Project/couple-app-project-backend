@@ -6,7 +6,7 @@ import {
   Get,
   Param,
   Post,
-  Req,
+  Response,
   UseGuards,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
@@ -38,8 +38,9 @@ export class AuthController {
   async login(
     @currentUser() user: CurrentUserDto,
     @Body() loginUserDto: LoginUserDto,
+    @Response() res,
   ) {
-    return this.authService.login(user);
+    return this.authService.login(user, res);
   }
 
   @UseGuards(JwtAuthGuard)
@@ -59,7 +60,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Access token 재발급' })
   @Get('reissue')
   @ApiBearerAuth()
-  reissueAccessToken(@currentUser() user: CurrentUserDto) {
+  reissueAccessToken(@currentUser() user: CurrentUserDto, @Response() res) {
     const payload = {
       userId: user.userId,
       userName: user.userName,
@@ -69,7 +70,10 @@ export class AuthController {
       secret: jwtConstants.secret,
       expiresIn: '1h',
     });
-    return { accessToken };
+
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+
+    res.send({ message: 'access token 재발급 완료.' });
   }
 
   @UseGuards(JwtAuthGuard)

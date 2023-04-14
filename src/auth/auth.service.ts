@@ -36,7 +36,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any) {
+  async login(user: any, res) {
     const payload: IJwtPayload = {
       userId: user.id,
       userName: user.name,
@@ -44,6 +44,11 @@ export class AuthService {
     };
     const me = await this.prismaService.user.findUnique({
       where: { email: user.email },
+    });
+
+    const accessToken = this.jwtService.sign(payload, {
+      secret: jwtConstants.secret,
+      expiresIn: '1h',
     });
 
     const refreshToken = this.jwtService.sign(payload, {
@@ -56,14 +61,10 @@ export class AuthService {
       data: { refreshToken },
     });
 
-    return {
-      accessToken: this.jwtService.sign(payload, {
-        secret: jwtConstants.secret,
-        expiresIn: '1h',
-      }),
-      refreshToken,
-      isCoupleConnected: me.coupleId ? true : false,
-    };
+    res.cookie('accessToken', accessToken, { httpOnly: true });
+    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+
+    res.send({ isCoupleConnected: me.coupleId ? true : false });
   }
 
   async validateEmail(checkEmailDto: CheckEmailDto) {

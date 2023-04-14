@@ -5,6 +5,7 @@ import { SwaggerModule } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import { SWAGGER_CONFIG } from './config/swagger.config';
 import { SuccessInterceptor } from './interceptors/success.interceptor';
+import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -15,6 +16,7 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.enableCors();
+  app.use(cookieParser());
   app.useGlobalInterceptors(new SuccessInterceptor());
   app.useGlobalPipes(
     new ValidationPipe({
