@@ -178,7 +178,7 @@ export class CoupleCalendarUtil {
 
     const thisBirthDay =
       startLocalDate.year() < endLocalDate.year() &&
-      userStartYearBirthDay.isAfter(startLocalDate)
+      startLocalDate.isAfter(userStartYearBirthDay)
         ? LocalDate.of(
             endLocalDate.year(),
             userBirthDay.monthValue(),
@@ -209,7 +209,7 @@ export class CoupleCalendarUtil {
 
     const thisAnniversary =
       startLocalDate.year() < endLocalDate.year() &&
-      startYearAnniversary.isAfter(startLocalDate)
+      startLocalDate.isAfter(startYearAnniversary)
         ? LocalDate.of(
             endLocalDate.year(),
             coupleAnniversary.monthValue(),
