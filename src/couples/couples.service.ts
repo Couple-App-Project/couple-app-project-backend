@@ -52,4 +52,17 @@ export class CouplesService {
     }
     return userData.coupleId;
   }
+
+  async disconnectCouple(user: CurrentUserDto) {
+    const existUser = await this.prismaService.user.findUnique({
+      where: {
+        id: user.userId,
+      },
+    });
+    await this.prismaService.couple.delete({
+      where: {
+        id: existUser.coupleId,
+      },
+    });
+  }
 }

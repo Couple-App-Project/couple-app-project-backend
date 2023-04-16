@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   Post,
   UploadedFile,
@@ -190,5 +191,11 @@ export class CouplesController {
   async getBackgroundImage(@currentUser() user: CurrentUserDto) {
     const coupleId = await this.couplesService.getCoupleId(user);
     return await this.imagesService.getBackgroundImage(coupleId);
+  }
+
+  @Delete()
+  @ApiOperation({ summary: '커플 연결 해제' })
+  async disconnectCouple(@currentUser() user: CurrentUserDto) {
+    return await this.couplesService.disconnectCouple(user);
   }
 }

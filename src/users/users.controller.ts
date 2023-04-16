@@ -16,6 +16,7 @@ import { Cron } from '@nestjs/schedule';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { currentUser } from '../decorators/user.decorator';
 import { CurrentUserDto } from './dto/current-user.dto';
+import { CouplesService } from '../couples/couples.service';
 
 @ApiTags('회원 관리')
 @Controller('users')
@@ -24,6 +25,7 @@ export class UsersController {
     private readonly usersService: UsersService,
     private readonly jwtService: JwtService,
     private readonly prismaService: PrismaService,
+    private readonly couplesService: CouplesService,
   ) {}
 
   @Post()
@@ -65,16 +67,8 @@ export class UsersController {
   @Delete()
   @ApiOperation({ summary: '회원 탈퇴' })
   async delete(@currentUser() user: CurrentUserDto) {
-    const existUser = await this.prismaService.user.findUnique({
-      where: {
-        id: user.userId,
-      },
-    });
-    await this.prismaService.couple.delete({
-      where: {
-        id: existUser.coupleId,
-      },
-    });
+    await this.couplesService.disconnectCouple(user);
+
     await this.prismaService.user.delete({
       where: {
         id: user.userId,
