@@ -16,7 +16,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   app.enableCors({
-    origin: true,
+    origin: 'https://couple-app-project-frontend.vercel.app',
+    methods: 'GET, POST, PUT, DELETE',
+    allowedHeaders: 'Authorization, Content-Type',
     credentials: true,
   });
   app.use(cookieParser());
