@@ -71,7 +71,10 @@ export class AuthController {
       expiresIn: '1h',
     });
 
-    res.cookie('accessToken', accessToken, { httpOnly: true });
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      sameSite: 'Strict',
+    });
 
     res.send({ message: 'access token 재발급 완료.' });
   }

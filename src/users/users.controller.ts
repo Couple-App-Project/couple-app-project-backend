@@ -56,8 +56,14 @@ export class UsersController {
       data: { refreshToken },
     });
 
-    res.cookie('accessToken', accessToken, { httpOnly: true });
-    res.cookie('refreshToken', refreshToken, { httpOnly: true });
+    res.cookie('accessToken', accessToken, {
+      httpOnly: true,
+      sameSite: 'Strict',
+    });
+    res.cookie('refreshToken', refreshToken, {
+      httpOnly: true,
+      sameSite: 'Strict',
+    });
 
     res.send({ message: '회원 가입 완료!' });
   }
