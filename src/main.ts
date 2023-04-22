@@ -20,9 +20,9 @@ async function bootstrap() {
       'https://couple-app-project-frontend.vercel.app',
       'http://localhost:3000',
       'http://localhost:3001',
+      'http://127.0.0.1:3000',
+      'http://127.0.0.1:3001',
     ],
-    methods: 'GET, POST, PUT, DELETE',
-    allowedHeaders: 'Authorization, Content-Type',
     credentials: true,
   });
   app.use(cookieParser());
