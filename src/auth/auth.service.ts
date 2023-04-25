@@ -9,6 +9,7 @@ import { jwtConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { ConfigService } from '@nestjs/config';
+import { Response } from 'express';
 
 @Injectable()
 export class AuthService {
@@ -38,7 +39,7 @@ export class AuthService {
     return result;
   }
 
-  async login(user: any, res) {
+  async login(user: any, res: Response) {
     const payload: IJwtPayload = {
       userId: user.id,
       userName: user.name,
@@ -65,13 +66,13 @@ export class AuthService {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      domain: 'couple-app-project-frontend.vercel.app',
-      sameSite: 'Strict',
+      secure: true,
+      sameSite: 'none',
     });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      domain: 'couple-app-project-frontend.vercel.app',
-      sameSite: 'Strict',
+      secure: true,
+      sameSite: 'none',
     });
 
     res.send({ isCoupleConnected: me.coupleId ? true : false });
