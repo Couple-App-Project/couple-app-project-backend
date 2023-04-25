@@ -8,12 +8,14 @@ import { IJwtPayload } from './interfaces/jwt-payload.interface';
 import { jwtConstants } from './constants';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class AuthService {
   constructor(
     private jwtService: JwtService,
     private prismaService: PrismaService,
+    private readonly configService: ConfigService,
     private readonly mailService: MailService,
   ) {}
 
@@ -63,10 +65,12 @@ export class AuthService {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
+      domain: 'https://couple-app-project-frontend.vercel.app',
       sameSite: 'Strict',
     });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
+      domain: 'https://couple-app-project-frontend.vercel.app',
       sameSite: 'Strict',
     });
 
