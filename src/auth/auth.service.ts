@@ -65,14 +65,12 @@ export class AuthService {
 
     res.cookie('accessToken', accessToken, {
       httpOnly: true,
-      path: '/auth/login',
-      domain: 'https://couple-app-project-frontend.vercel.app',
+      domain: 'couple-app-project-frontend.vercel.app',
       sameSite: 'Strict',
     });
     res.cookie('refreshToken', refreshToken, {
       httpOnly: true,
-      path: '/auth/login',
-      domain: 'https://couple-app-project-frontend.vercel.app',
+      domain: 'couple-app-project-frontend.vercel.app',
       sameSite: 'Strict',
     });
 
